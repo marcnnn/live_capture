@@ -15,7 +15,7 @@ defmodule LiveCapture.Example do
 
   def hello2(assigns) do
     ~H"""
-    <p>Hello world2!</p>
+    <p>Hello world! <%= @title %></p>
     """
   end
 end
@@ -54,16 +54,24 @@ defmodule LiveCapture.Component.ShowLive do
     ~H"""
     <div class="flex min-h-svh">
       <div class="w-96 border-r">
-        <div class="text-xl">Components</div>
-        <div :for={module <- @modules}>
-          <%= module %>
-          <.link
-            :for={{capture, _} <- module.__captures__}
-            navigate={"/components/#{module}/#{capture}"}
-            class="block py-4 hover:bg-slate-200 cursor-pointer"
-          >
-            <%= capture %>
-          </.link>
+        <div class="text-xl text-center my-4">LiveCapture</div>
+        <div :for={module <- @modules} class="mx-4 mb-4">
+          <div class="font-semibold text-slate-900 mb-2"><%= module %></div>
+          <ul class="space-y-6 lg:space-y-2 border-l border-slate-100">
+            <li>
+              <.link
+                :for={{capture, _} <- module.__captures__}
+                navigate={"/components/#{module}/#{capture}"}
+                class={[
+                  "block pl-4 border-l cursor-pointer hover:text-slate-900 hover:border-slate-400 mb-2",
+                  (module == @component[:module] && capture == @component[:function] &&
+                     "border-slate-400 text-slate-900") || "border-slate-100 text-slate-700"
+                ]}
+              >
+                <%= capture %>
+              </.link>
+            </li>
+          </ul>
         </div>
       </div>
       <div class="flex-1 flex flex-col">
