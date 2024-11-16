@@ -25,7 +25,17 @@ defmodule LiveCapture.Component.ShowLive do
   alias LiveCapture.Component.Components
 
   def mount(_, _, socket) do
-    modules = LiveCapture.Component.list()
+    modules =
+      LiveCapture.Component.list()
+      |> Enum.group_by(fn module ->
+        to_string(module)
+        |> String.split(".")
+        |> List.pop_at(0)
+        |> elem(1)
+        |> List.pop_at(-1)
+        |> elem(1)
+        |> Enum.join(".")
+      end)
 
     {:ok, assign(socket, modules: modules, component: nil)}
   end
@@ -33,7 +43,7 @@ defmodule LiveCapture.Component.ShowLive do
   def handle_params(%{"module" => module, "function" => function}, _, socket) do
     module =
       Enum.find(
-        socket.assigns.modules,
+        socket.assigns.modules |> Map.values() |> List.flatten(),
         &(to_string(&1) == module)
       )
 
@@ -53,25 +63,31 @@ defmodule LiveCapture.Component.ShowLive do
   def render(assigns) do
     ~H"""
     <div class="flex min-h-svh">
-      <div class="w-96 border-r">
+      <div class="w-96 border-r bg-slate-100">
         <div class="text-xl text-center my-4">LiveCapture</div>
-        <div :for={module <- @modules} class="mx-4 mb-4">
-          <div class="font-semibold text-slate-900 mb-2"><%= module %></div>
-          <ul class="space-y-6 lg:space-y-2 border-l border-slate-100">
-            <li>
-              <.link
-                :for={{capture, _} <- module.__captures__}
-                navigate={"/components/#{module}/#{capture}"}
-                class={[
-                  "block pl-4 border-l cursor-pointer hover:text-slate-900 hover:border-slate-400 mb-2",
-                  (module == @component[:module] && capture == @component[:function] &&
-                     "border-slate-400 text-slate-900") || "border-slate-100 text-slate-700"
-                ]}
-              >
-                <%= capture %>
-              </.link>
-            </li>
-          </ul>
+        <div :for={{group, list} <- @modules} class="mx-4 mb-4">
+          <div class="font-semibold text-slate-900 mb-2"><%= group %></div>
+          <div :for={module <- list} class="ml-4 mb-6">
+            <div class="font-semibold text-slate-900 mb-2">
+              <%= to_string(module) |> String.split(".") |> List.last() %>
+            </div>
+            <ul class="space-y-6 lg:space-y-2 border-l border-slate-300">
+              <li>
+                <.link
+                  :for={{capture, _} <- module.__captures__}
+                  navigate={"/components/#{module}/#{capture}"}
+                  class={[
+                    "-ml-px block pl-4 border-l cursor-pointer mb-2",
+                    (module == @component[:module] && capture == @component[:function] &&
+                       "border-slate-700 text-slate-900") ||
+                      "hover:text-slate-900 hover:border-slate-700 border-slate-300 text-slate-700"
+                  ]}
+                >
+                  <%= capture %>
+                </.link>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div class="flex-1 flex flex-col">
