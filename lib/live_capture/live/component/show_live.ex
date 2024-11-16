@@ -1,6 +1,6 @@
-defmodule CaptureUI.Example do
+defmodule LiveCapture.Example do
   use Phoenix.Component
-  use CaptureUI.Component
+  use LiveCapture.Component
 
   capture()
 
@@ -20,12 +20,12 @@ defmodule CaptureUI.Example do
   end
 end
 
-defmodule CaptureUI.Component.ShowLive do
-  use CaptureUI.Web, :live_view
-  alias CaptureUI.Component.Components
+defmodule LiveCapture.Component.ShowLive do
+  use LiveCapture.Web, :live_view
+  alias LiveCapture.Component.Components
 
   def mount(_, _, socket) do
-    modules = CaptureUI.Component.list()
+    modules = LiveCapture.Component.list()
 
     {:ok, assign(socket, modules: modules, component: nil)}
   end

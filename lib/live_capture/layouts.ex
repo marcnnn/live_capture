@@ -1,4 +1,4 @@
-defmodule CaptureUI.Layouts do
+defmodule LiveCapture.Layouts do
   use Phoenix.Component
 
   embed_templates("layouts/*")

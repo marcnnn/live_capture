@@ -1,4 +1,4 @@
-defmodule CaptureUI.Web do
+defmodule LiveCapture.Web do
   def live_view do
     quote do
       use Phoenix.LiveView

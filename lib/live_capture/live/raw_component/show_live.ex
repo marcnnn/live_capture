@@ -1,8 +1,8 @@
-defmodule CaptureUI.RawComponent.ShowLive do
-  use CaptureUI.Web, :live_view
+defmodule LiveCapture.RawComponent.ShowLive do
+  use LiveCapture.Web, :live_view
 
   def mount(params, _, socket) do
-    module = CaptureUI.Component.list() |> Enum.find(&(to_string(&1) == params["module"]))
+    module = LiveCapture.Component.list() |> Enum.find(&(to_string(&1) == params["module"]))
 
     function =
       module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == params["function"]))

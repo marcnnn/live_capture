@@ -1,6 +1,6 @@
-defmodule CaptureUI.Component.Components.Attribute do
+defmodule LiveCapture.Component.Components.Attribute do
   use Phoenix.Component
-  use CaptureUI.Component
+  use LiveCapture.Component
 
   attr :attrs, :list,
     examples: [

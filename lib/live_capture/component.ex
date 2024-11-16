@@ -1,13 +1,13 @@
-defmodule CaptureUI.Component do
+defmodule LiveCapture.Component do
   defmacro __using__(_) do
     quote do
       Module.register_attribute(__MODULE__, :capture, accumulate: true)
       Module.put_attribute(__MODULE__, :__captures__, %{})
 
-      @on_definition CaptureUI.Component
-      @before_compile CaptureUI.Component
+      @on_definition LiveCapture.Component
+      @before_compile LiveCapture.Component
 
-      import CaptureUI.Component, only: [capture: 0]
+      import LiveCapture.Component, only: [capture: 0]
     end
   end
 
@@ -40,7 +40,7 @@ defmodule CaptureUI.Component do
   end
 
   def list do
-    {:ok, list} = :application.get_key(:capture_ui, :modules)
+    {:ok, list} = :application.get_key(:live_capture, :modules)
     list |> Enum.filter(&(&1.__info__(:functions) |> Keyword.has_key?(:__captures__)))
   end
 end

@@ -1,4 +1,4 @@
-defmodule CaptureUI.PageController do
+defmodule LiveCapture.PageController do
   use Phoenix.Controller
 
   def not_found(conn, _) do

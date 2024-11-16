@@ -3,7 +3,7 @@ import Config
 if config_env() == :dev do
   config :esbuild,
     version: "0.17.11",
-    capture_ui: [
+    live_capture: [
       args: ~w(js/app.js --bundle --minify --target=es2020 --outdir=../priv/static/js ),
       cd: Path.expand("../assets", __DIR__),
       env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
@@ -11,7 +11,7 @@ if config_env() == :dev do
 
   config :tailwind,
     version: "3.4.3",
-    capture_ui: [
+    live_capture: [
       args: ~w(
       --config=tailwind.config.js
       --input=css/app.css

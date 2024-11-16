@@ -1,11 +1,11 @@
-defmodule CaptureUI.MixProject do
+defmodule LiveCapture.MixProject do
   use Mix.Project
 
   @version "0.1.0"
 
   def project do
     [
-      app: :capture_ui,
+      app: :live_capture,
       version: @version,
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env()),

@@ -1,5 +1,5 @@
 #######################################
-# Development Server for CaptureUI
+# Development Server for LiveCapture
 #
 # $ iex -S mix dev
 #######################################
@@ -7,7 +7,7 @@
 Logger.configure(level: :debug)
 
 # Configures the endpoint
-Application.put_env(:capture_ui, DemoWeb.Endpoint,
+Application.put_env(:live_capture, DemoWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "G1NXGZJiMBnjjFR+cXdeavjK5poXpRrOB6OBi4wHo53g/utCds5P6X+qkcpF/otD",
   live_view: [signing_salt: "Z8MZuOET"],
@@ -16,20 +16,20 @@ Application.put_env(:capture_ui, DemoWeb.Endpoint,
   check_origin: false,
   pubsub_server: Demo.PubSub,
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:capture_ui, ~w(--watch)]},
-    tailwind: {Tailwind, :install_and_run, [:capture_ui, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:live_capture, ~w(--watch)]},
+    tailwind: {Tailwind, :install_and_run, [:live_capture, ~w(--watch)]}
   ],
   live_reload: [
     patterns: [
       ~r"priv/static/*/.*(js|css|png|jpeg|jpg|gif|svg)$",
-      ~r"lib/capture_ui/(live|views)/.*(ex)$"
+      ~r"lib/live_capture/(live|views)/.*(ex)$"
     ]
   ]
 )
 
 defmodule DemoWeb.Router do
   use Phoenix.Router
-  import CaptureUI.Router
+  import LiveCapture.Router
 
   pipeline :browser do
     plug :fetch_session
@@ -45,7 +45,7 @@ defmodule DemoWeb.Router do
 end
 
 defmodule DemoWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :capture_ui
+  use Phoenix.Endpoint, otp_app: :live_capture
 
   @session_options [
     store: :cookie,
