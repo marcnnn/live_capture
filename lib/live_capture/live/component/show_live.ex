@@ -135,12 +135,19 @@ defmodule LiveCapture.Component.ShowLive do
     ~H"""
     <div>
       <div class="text-xl text-center my-4">LiveCapture</div>
-      <div class="mx-4 space-y-6">
-        <div :for={module <- @modules} class="space-y-2">
+      <div class="mx-4 space-y-1">
+        <div :for={module <- @modules}>
           <div class="font-semibold text-slate-900">
-            <%= module |> Module.split() |> Enum.join(".") %>
+            <%= if @component.module == module, do: module %>
+
+            <.link
+              :if={@component.module != module}
+              navigate={"/components/#{module}/#{Enum.at(module.__captures__, 0) |> elem(0)}"}
+            >
+              <%= module %>
+            </.link>
           </div>
-          <ul class="border-l border-slate-300 space-y-2">
+          <ul :if={@component.module == module} class="border-l border-slate-300 space-y-2 my-4">
             <li :for={{capture, _} <- module.__captures__}>
               <.link
                 navigate={"/components/#{module}/#{capture}"}
