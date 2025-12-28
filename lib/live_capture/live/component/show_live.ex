@@ -176,9 +176,10 @@ defmodule LiveCapture.Component.ShowLive do
 
   defp docs(assigns) do
     ~H"""
-    <code class="whitespace-pre">
-      alias <%= @component[:module] %> &lt;<%= @component[:module] %>.<%= @component[:function] %>
-      <.attrs list={@component[:attrs]} /> /&gt;
+    <code class="whitespace-pre" phx-no-format>
+      alias <%= @component[:module] %>
+
+      &lt;<%= @component[:module] %>.<%= @component[:function] %> <.attrs list={@component[:attrs]} /> /&gt;
     </code>
     """
   end
@@ -209,7 +210,7 @@ defmodule LiveCapture.Component.ShowLive do
     assigns = assign(assigns, :signature, signature)
 
     ~H"""
-    <div class="ml-4"><%= @signature %></div>
+    <div class="ml-8"><%= @signature %></div>
     """
   end
 end
