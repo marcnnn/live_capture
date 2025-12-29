@@ -1,6 +1,7 @@
 // See the Tailwind configuration guide for advanced usage
 // https://tailwindcss.com/docs/configuration
 
+const colors = require('tailwindcss/colors')
 let plugin = require('tailwindcss/plugin')
 
 module.exports = {
@@ -9,7 +10,11 @@ module.exports = {
     '../lib/**/*.*ex'
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: colors.blue['800'],
+      },
+    },
   },
   plugins: [
     require('@tailwindcss/forms'),
