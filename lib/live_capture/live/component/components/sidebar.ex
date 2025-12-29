@@ -22,28 +22,32 @@ defmodule LiveCapture.Component.Components.Sidebar do
     ~H"""
     <div>
       <.title />
-
-      <div class="space-y-2">
-        <div :for={module <- @modules}>
-          <% is_selected = @component[:module] == module %>
-          <.module_title module={module} is_selected={is_selected} />
-          <div class="mx-4">
-            <.functions_list
-              :if={is_selected}
-              module={module}
-              component={@component}
-              is_selected={is_selected}
-            />
-          </div>
-        </div>
-      </div>
+      <.section
+        :for={module <- @modules}
+        module={module}
+        component={@component}
+        is_selected={@component[:module] == module}
+      />
     </div>
     """
   end
 
   defp title(assigns) do
     ~H"""
-    <div class="m-4 font-bold text-primary"><.link navigate="/">LiveCapture</.link></div>
+    <div class="font-semibold text-primary my-4 px-2"><.link navigate="/">LiveCapture</.link></div>
+    """
+  end
+
+  attr :module, :any, required: true
+  attr :component, :map, required: true
+  attr :is_selected, :boolean, required: true
+
+  defp section(assigns) do
+    ~H"""
+    <section class={["py-1 px-2", @is_selected && "bg-primary/5"]}>
+      <.module_title module={@module} is_selected={@is_selected} />
+      <.functions_list :if={@is_selected} module={@module} component={@component} />
+    </section>
     """
   end
 
@@ -52,7 +56,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   defp module_title(%{is_selected: true} = assigns) do
     ~H"""
-    <div class="text-primary border-l-4 border-primary px-3">
+    <div class="text-primary">
       <%= @module %>
     </div>
     """
@@ -60,7 +64,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   defp module_title(%{is_selected: false} = assigns) do
     ~H"""
-    <div class="mx-4">
+    <div>
       <.link navigate={"/components/#{@module}/#{Enum.at(@module.__captures__, 0) |> elem(0)}"}>
         <%= @module %>
       </.link>
@@ -70,17 +74,18 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   attr :module, :any, required: true
   attr :component, :map, required: true
-  attr :is_selected, :boolean, required: true
 
   defp functions_list(assigns) do
+    assings = assign(assigns, selected_class: "")
+
     ~H"""
-    <ul class="border-l border-slate-300 my-4">
+    <ul class="ml-4 py-2">
       <li :for={{capture, _} <- @module.__captures__}>
         <.link
           navigate={"/components/#{@module}/#{capture}"}
           class={[
-            "-ml-px block pl-4 border-l cursor-pointer",
-            (@is_selected && capture == @component[:function] &&
+            "block border-l px-3 cursor-pointer",
+            (capture == @component[:function] &&
                "border-primary text-primary") ||
               "hover:text-slate-900 hover:border-slate-700 border-slate-300 text-slate-700"
           ]}
