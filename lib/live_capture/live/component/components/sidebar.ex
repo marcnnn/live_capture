@@ -34,7 +34,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   defp title(assigns) do
     ~H"""
-    <div class="font-semibold text-primary my-4 px-2"><.link navigate="/">LiveCapture</.link></div>
+    <div class="font-semibold  my-4 px-2"><.link navigate="/">LiveCapture</.link></div>
     """
   end
 
@@ -44,7 +44,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   defp section(assigns) do
     ~H"""
-    <section class={["py-1 px-2", @is_selected && "bg-primary/5"]}>
+    <section class={["py-1 px-2 border-l-2 hover:border-primary hover:bg-primary/5", @is_selected && "bg-primary/5 border-primary"]}>
       <.module_title module={@module} is_selected={@is_selected} />
       <.functions_list :if={@is_selected} module={@module} component={@component} />
     </section>
@@ -84,10 +84,10 @@ defmodule LiveCapture.Component.Components.Sidebar do
         <.link
           navigate={"/components/#{@module}/#{capture}"}
           class={[
-            "block border-l px-3 cursor-pointer",
+            "block border-l-2 px-3 cursor-pointer",
             (capture == @component[:function] &&
                "border-primary text-primary") ||
-              "hover:text-slate-900 hover:border-slate-700 border-slate-300 text-slate-700"
+              "hover:text-slate-900 hover:border-primary border-slate-300 text-slate-700"
           ]}
         >
           <%= capture %>/<%= attr_count(@module, capture) %>
