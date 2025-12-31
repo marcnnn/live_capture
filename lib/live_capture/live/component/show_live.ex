@@ -13,7 +13,7 @@ defmodule LiveCapture.Component.ShowLive do
        socket,
        modules: modules,
        component: nil,
-       breakpoint_options:  Enum.map(@breakpoints, &to_string(elem(&1, 0))),
+       breakpoint_options: Enum.map(@breakpoints, &to_string(elem(&1, 0))),
        frame_configuration: %{"breakpoint" => nil}
      )}
   end
@@ -73,9 +73,7 @@ defmodule LiveCapture.Component.ShowLive do
 
   def render(assigns) do
     ~H"""
-    <Components.Layout.show
-      component={@component}
-    >
+    <Components.Layout.show component={@component}>
       <:sidebar>
         <Components.Sidebar.show modules={@modules} component={@component} />
       </:sidebar>
@@ -103,54 +101,9 @@ defmodule LiveCapture.Component.ShowLive do
       </:render>
 
       <:docs>
-        <.docs component={@component} />
+        <Components.Docs.show :if={@component} component={@component} />
       </:docs>
     </Components.Layout.show>
-    """
-  end
-
-  defp docs(%{component: nil} = assigns) do
-    ~H"""
-    """
-  end
-
-  defp docs(assigns) do
-    ~H"""
-    <code class="whitespace-pre" phx-no-format>
-      alias <%= @component[:module] %>
-
-      &lt;<%= @component[:module] %>.<%= @component[:function] %> <.attrs list={@component[:attrs]} /> /&gt;
-    </code>
-    """
-  end
-
-  defp attrs(assigns) do
-    signature =
-      (assigns.list || [])
-      |> Enum.map(fn attr ->
-        case attr do
-          %{name: name, opts: [examples: [example | _]]} ->
-            [
-              name,
-              example
-              |> inspect()
-              |> Code.format_string!()
-              |> Enum.join("")
-              |> String.split("\n")
-              |> Enum.join("\n")
-            ]
-            |> Enum.join("=")
-
-          _ ->
-            ""
-        end
-      end)
-      |> Enum.join("\n")
-
-    assigns = assign(assigns, :signature, signature)
-
-    ~H"""
-    <div class="ml-8"><%= @signature %></div>
     """
   end
 end

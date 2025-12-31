@@ -35,7 +35,7 @@ defmodule LiveCapture.Component.Components.Form do
           for={input_id(@field.form, @field.field, (@field.value != option && option) || nil)}
           class={[
             "flex uppercase text-xs font-semibold items-center  px-2 py-auto cursor-pointer h-10 border-b-2 hover:border-primary hover:text-primary/80",
-            @field.value == option && "text-primary border-primary" || "border-transparent"
+            (@field.value == option && "text-primary border-primary") || "border-transparent"
           ]}
         >
           <%= option %>
