@@ -77,14 +77,20 @@ defmodule LiveCapture.Component.Components.Docs do
     ~H"""
     <%= if @attr_list == [] do %>
       <div>
-        &lt;<%= highlight(@aliased_name, :module) %>.<%= highlight(@function_name, :function) %> /&gt;
+        <%= highlight("<", :punctuation) %><%= highlight(@aliased_name, :module) %>.<%= highlight(
+          @function_name,
+          :function
+        ) %><%= highlight(" />", :punctuation) %>
       </div>
     <% else %>
       <div>
-        &lt;<%= highlight(@aliased_name, :module) %>.<%= highlight(@function_name, :function) %>
+        <%= highlight("<", :punctuation) %><%= highlight(@aliased_name, :module) %>.<%= highlight(
+          @function_name,
+          :function
+        ) %>
       </div>
       <.attrs list={@attr_list} />
-      <div>/&gt;</div>
+      <div><%= highlight("/>", :punctuation) %></div>
     <% end %>
     """
   end
@@ -178,10 +184,15 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp value_lines(list, indent) when is_list(list) do
-    if list == [] do
-      [{indent, [highlight_token("[]", :punctuation)]}]
-    else
-      list_lines(list, indent)
+    cond do
+      list == [] ->
+        [{indent, [highlight_token("[]", :punctuation)]}]
+
+      long_list?(list) ->
+        collapsible_list(list, indent)
+
+      true ->
+        list_lines(list, indent)
     end
   end
 
@@ -315,8 +326,8 @@ defmodule LiveCapture.Component.Components.Docs do
     raw(iodata)
   end
 
-  defp line_to_html({:collapsible, indent, module, inner_lines}) do
-    render_collapsible_struct(indent, module, inner_lines)
+  defp line_to_html({:collapsible, indent, label_tokens, inner_lines}) do
+    render_collapsible(label_tokens, indent, inner_lines)
   end
 
   defp line_to_html({indent, parts}) do
@@ -380,11 +391,11 @@ defmodule LiveCapture.Component.Components.Docs do
     ["docs-syntax", tone]
   end
 
-  defp collapsible_struct(module, lines, indent) do
-    [{:collapsible, indent, module, lines}]
+  defp collapsible(label_tokens, lines, indent) do
+    [{:collapsible, indent, label_tokens, lines}]
   end
 
-  defp render_collapsible_struct(indent, module, inner_lines) do
+  defp render_collapsible(label_tokens, indent, inner_lines) do
     base_id = "docs-collapsible-#{System.unique_integer([:positive])}"
     label_id = base_id <> "-label"
     content_id = base_id <> "-content"
@@ -408,7 +419,7 @@ defmodule LiveCapture.Component.Components.Docs do
       " onclick=\"",
       toggle,
       "\">",
-      collapsible_label_tokens(module) |> Enum.map(&Phoenix.HTML.Safe.to_iodata/1),
+      label_tokens |> Enum.map(&Phoenix.HTML.Safe.to_iodata/1),
       "</span>",
       "</div>",
       "<div id=\"",
@@ -419,7 +430,21 @@ defmodule LiveCapture.Component.Components.Docs do
     ]
   end
 
-  defp collapsible_label_tokens(module) do
+  defp collapsible_struct(module, lines, indent) do
+    collapsible(struct_label_tokens(module), lines, indent)
+  end
+
+  defp collapsible_list(list, indent) do
+    label_tokens = [
+      highlight_token("[", :punctuation),
+      highlight_token("...", :punctuation),
+      highlight_token("]", :punctuation)
+    ]
+
+    collapsible(label_tokens, list_lines(list, indent), indent)
+  end
+
+  defp struct_label_tokens(module) do
     [
       highlight_token("%", :operator),
       highlight_token(module, :module),
@@ -427,6 +452,15 @@ defmodule LiveCapture.Component.Components.Docs do
       highlight_token("...", :punctuation),
       highlight_token("}", :punctuation)
     ]
+  end
+
+  defp long_list?(list) do
+    list
+    |> inspect()
+    |> Code.format_string!()
+    |> IO.iodata_to_binary()
+    |> String.length()
+    |> Kernel.>(100)
   end
 
   defp color(category), do: Map.get(@theme.colors, category, @theme.colors[:default])
