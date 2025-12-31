@@ -76,9 +76,13 @@ defmodule LiveCapture.Component.Components.Docs do
 
     ~H"""
     <%= if @attr_list == [] do %>
-      <div>&lt;<%= highlight(@aliased_name, :module) %>.<%= highlight(@function_name, :function) %> /&gt;</div>
+      <div>
+        &lt;<%= highlight(@aliased_name, :module) %>.<%= highlight(@function_name, :function) %> /&gt;
+      </div>
     <% else %>
-      <div>&lt;<%= highlight(@aliased_name, :module) %>.<%= highlight(@function_name, :function) %></div>
+      <div>
+        &lt;<%= highlight(@aliased_name, :module) %>.<%= highlight(@function_name, :function) %>
+      </div>
       <.attrs list={@attr_list} />
       <div>/&gt;</div>
     <% end %>
@@ -92,11 +96,20 @@ defmodule LiveCapture.Component.Components.Docs do
     <div class="ml-4">
       <%= for {name, example} <- @attrs do %>
         <%= if multiline_value?(example) do %>
-          <div><%= highlight(name, :attr_name) %><%= highlight("=", :operator) %><%= highlight("{", :punctuation) %></div>
+          <div>
+            <%= highlight(name, :attr_name) %><%= highlight("=", :operator) %><%= highlight(
+              "{",
+              :punctuation
+            ) %>
+          </div>
           <%= render_value_lines(example, 2) %>
           <div><%= highlight("}", :punctuation) %></div>
         <% else %>
-          <div><%= highlight(name, :attr_name) %><%= highlight("=", :operator) %><%= render_inline(example) %></div>
+          <div>
+            <%= highlight(name, :attr_name) %><%= highlight("=", :operator) %><%= render_inline(
+              example
+            ) %>
+          </div>
         <% end %>
       <% end %>
     </div>
@@ -148,7 +161,11 @@ defmodule LiveCapture.Component.Components.Docs do
   defp value_lines(value, indent) when is_binary(value) do
     [
       {indent,
-       [highlight_token("\"", :punctuation), highlight_token(value, :string), highlight_token("\"", :punctuation)]}
+       [
+         highlight_token("\"", :punctuation),
+         highlight_token(value, :string),
+         highlight_token("\"", :punctuation)
+       ]}
     ]
   end
 
@@ -200,12 +217,19 @@ defmodule LiveCapture.Component.Components.Docs do
       |> List.last()
 
     fields = Map.from_struct(value) |> Enum.to_list()
-    open = {indent, [highlight_token("%", :operator), highlight_token(module, :module), highlight_token("{", :punctuation)]}
+
+    open =
+      {indent,
+       [
+         highlight_token("%", :operator),
+         highlight_token(module, :module),
+         highlight_token("{", :punctuation)
+       ]}
 
     inner = render_pairs(fields, indent + 2)
     close = {indent, [highlight_token("}", :punctuation)]}
 
-    [open | inner] ++ [close]
+    collapsible_struct(module, [open | inner] ++ [close], indent)
   end
 
   defp value_lines(map, indent) when is_map(map) do
@@ -264,7 +288,7 @@ defmodule LiveCapture.Component.Components.Docs do
            key_tokens(key) ++
              [highlight_token(": ", :operator)] ++ parts}
 
-        ([new_first | rest] |> append_suffix(suffix))
+        [new_first | rest] |> append_suffix(suffix)
 
       _ ->
         append_suffix([{indent, key_tokens(key) ++ [highlight_token(": ", :operator)]}], suffix)
@@ -286,13 +310,19 @@ defmodule LiveCapture.Component.Components.Docs do
   defp lines_to_html(lines) do
     iodata =
       lines
-      |> Enum.map(fn {indent, parts} ->
-        padding = String.duplicate("&nbsp;", indent)
-        content = parts |> List.wrap() |> Enum.map(&Phoenix.HTML.Safe.to_iodata/1)
-        ["<div>", padding, content, "</div>"]
-      end)
+      |> Enum.map(&line_to_html/1)
 
     raw(iodata)
+  end
+
+  defp line_to_html({:collapsible, indent, module, inner_lines}) do
+    render_collapsible_struct(indent, module, inner_lines)
+  end
+
+  defp line_to_html({indent, parts}) do
+    padding = String.duplicate("&nbsp;", indent)
+    content = parts |> List.wrap() |> Enum.map(&Phoenix.HTML.Safe.to_iodata/1)
+    ["<div>", padding, content, "</div>"]
   end
 
   defp inline_tokens([{_indent, parts}]) do
@@ -348,6 +378,55 @@ defmodule LiveCapture.Component.Components.Docs do
     tone = color(category)
 
     ["docs-syntax", tone]
+  end
+
+  defp collapsible_struct(module, lines, indent) do
+    [{:collapsible, indent, module, lines}]
+  end
+
+  defp render_collapsible_struct(indent, module, inner_lines) do
+    base_id = "docs-collapsible-#{System.unique_integer([:positive])}"
+    label_id = base_id <> "-label"
+    content_id = base_id <> "-content"
+
+    toggle =
+      "document.getElementById('#{content_id}').classList.remove('hidden');" <>
+        "document.getElementById('#{label_id}').classList.add('hidden');"
+
+    margin_left =
+      if indent > 0 do
+        [" style=\"margin-left: ", Integer.to_string(indent), "ch\""]
+      else
+        []
+      end
+
+    [
+      "<div><span id=\"",
+      label_id,
+      "\" class=\"inline-block cursor-pointer rounded bg-slate-100 px-1 text-[11px] leading-5\"",
+      margin_left,
+      " onclick=\"",
+      toggle,
+      "\">",
+      collapsible_label_tokens(module) |> Enum.map(&Phoenix.HTML.Safe.to_iodata/1),
+      "</span>",
+      "</div>",
+      "<div id=\"",
+      content_id,
+      "\" class=\"hidden\">",
+      Phoenix.HTML.Safe.to_iodata(lines_to_html(inner_lines)),
+      "</div>"
+    ]
+  end
+
+  defp collapsible_label_tokens(module) do
+    [
+      highlight_token("%", :operator),
+      highlight_token(module, :module),
+      highlight_token("{", :punctuation),
+      highlight_token("...", :punctuation),
+      highlight_token("}", :punctuation)
+    ]
   end
 
   defp color(category), do: Map.get(@theme.colors, category, @theme.colors[:default])
