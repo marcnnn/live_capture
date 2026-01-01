@@ -36,9 +36,9 @@ defmodule LiveCapture.Component.Components.Layout do
             <%= render_slot(@docs) %>
           </.section>
 
-          <div class="border-l"></div>
+          <div :if={false} class="border-l"></div>
 
-          <.section title="Attributes">
+          <.section :if={false} title="Attributes">
             <%= render_slot(@attributes) %>
           </.section>
         </div>
