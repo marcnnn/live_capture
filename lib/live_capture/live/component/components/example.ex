@@ -10,8 +10,14 @@ defmodule LiveCapture.Component.Components.Example do
     """
   end
 
-  attr :title, :string, examples: ["Earth"]
-  capture()
+  attr :title, :string
+
+  capture(
+    variants: [
+      earth: %{attrs: %{title: "Earth"}},
+      moon: %{attrs: %{title: "Moon"}}
+    ]
+  )
 
   def complex(assigns) do
     ~H"""

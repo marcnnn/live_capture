@@ -16,20 +16,34 @@ defmodule LiveCapture.RawComponent.ShowLive do
 
     phoenix_component = socket.assigns.module.__components__[socket.assigns.function] || %{}
 
+    default_variant_attrs =
+      socket.assigns.module.__captures__
+      |> Map.get(socket.assigns.function, %{})
+      |> Map.get(:variants, [])
+      |> List.first()
+      |> Kernel.||({:variant_name, %{}})
+      |> elem(1)
+      |> Map.get(:attrs, %{})
+
     attrs =
       Enum.reduce(phoenix_component[:attrs] || [], %{}, fn attr, acc ->
         custom_value = custom_params[to_string(attr.name)]
 
-        if custom_value == nil do
-          case attr do
-            %{name: name, opts: [examples: [example | _]]} ->
-              Map.put(acc, name, example)
+        cond do
+          custom_value != nil ->
+            Map.put(acc, attr.name, custom_value)
 
-            _ ->
-              acc
-          end
-        else
-          Map.put(acc, attr.name, custom_value)
+          Map.has_key?(default_variant_attrs, attr.name) ->
+            Map.put(acc, attr.name, default_variant_attrs[attr.name])
+
+          true ->
+            case attr do
+              %{name: name, opts: [examples: [example | _]]} ->
+                Map.put(acc, name, example)
+
+              _ ->
+                acc
+            end
         end
       end)
 
