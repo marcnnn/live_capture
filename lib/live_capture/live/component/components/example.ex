@@ -34,13 +34,17 @@ defmodule LiveCapture.Component.Components.Example do
   end
 
   capture(
-    slots: %{
-      inner_block: "This is inner slot content.",
-      cities: [
-        %{name: "Paris", content: "France"},
-        %{name: "Berlin", content: "Germany"}
-      ]
-    }
+    variants: [
+      main: %{
+        slots: %{
+          inner_block: "This is inner slot content.",
+          cities: [
+            %{name: "Paris", content: "France"},
+            %{name: "Berlin", content: "Germany"}
+          ]
+        }
+      }
+    ]
   )
 
   def with_slot(assigns) do
