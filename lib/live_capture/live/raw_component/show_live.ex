@@ -7,19 +7,24 @@ defmodule LiveCapture.RawComponent.ShowLive do
     function =
       module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == params["function"]))
 
-    {:ok, assign(socket, module: module, function: function)}
-  end
+    variants =
+      module.__captures__
+      |> Map.get(function, %{})
+      |> Map.get(:variants, [])
+      |> Keyword.keys()
 
-  def handle_params(params, uri, socket) do
-    %{"custom_params" => custom_params} = URI.parse(uri).query |> Plug.Conn.Query.decode()
-    custom_params = if custom_params == "", do: %{}, else: custom_params
+    variant = select_variant(variants, params["variant"])
 
-    phoenix_component = socket.assigns.module.__components__[socket.assigns.function] || %{}
+    attrs = LiveCapture.Component.attrs(module, function, variant)
+    slots = LiveCapture.Component.slots(module, function, variant)
 
-    attrs = LiveCapture.Component.attrs(socket.assigns.module, socket.assigns.function)
-    slots = LiveCapture.Component.slots(socket.assigns.module, socket.assigns.function)
-
-    {:noreply, assign(socket, attrs: Map.merge(attrs, slots))}
+    {:ok,
+     assign(socket,
+       module: module,
+       function: function,
+       variant: variant,
+       attrs: Map.merge(attrs, slots)
+     )}
   end
 
   def render(assigns) do
@@ -30,5 +35,21 @@ defmodule LiveCapture.RawComponent.ShowLive do
       {__ENV__.module, __ENV__.function, __ENV__.file, __ENV__.line}
     ) %>
     """
+  end
+
+  defp select_variant(variants, variant_param) do
+    cond do
+      variant_param in [nil, ""] && variants != [] ->
+        List.first(variants)
+
+      variant_param && variant_param in Enum.map(variants, &to_string/1) ->
+        String.to_existing_atom(variant_param)
+
+      variants != [] ->
+        List.first(variants)
+
+      true ->
+        nil
+    end
   end
 end

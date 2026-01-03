@@ -18,15 +18,43 @@ defmodule LiveCapture.Component.ShowLive do
      )}
   end
 
+  def handle_params(
+        %{"module" => module, "function" => function, "variant" => variant},
+        _,
+        socket
+      ) do
+    assign_component(socket, module, function, variant)
+  end
+
   def handle_params(%{"module" => module, "function" => function}, _, socket) do
-    module = Enum.find(socket.assigns.modules, &(to_string(&1) == module))
+    assign_component(socket, module, function, nil)
+  end
+
+  def handle_params(_, _, socket), do: {:noreply, socket}
+
+  defp assign_component(socket, module_param, function_param, variant_param) do
+    module = Enum.find(socket.assigns.modules, &(to_string(&1) == module_param))
 
     if module do
       function =
-        module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == function))
+        module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == function_param))
 
       phoenix_component = module.__components__[function] || %{}
-      capture_meta = module.__captures__ |> Map.get(function, %{})
+
+      variants =
+        module.__captures__ |> Map.get(function, %{}) |> Map.get(:variants, []) |> Keyword.keys()
+
+      selected_variant =
+        cond do
+          variant_param && variant_param in Enum.map(variants, &to_string/1) ->
+            String.to_existing_atom(variant_param)
+
+          variants != [] ->
+            List.first(variants)
+
+          true ->
+            nil
+        end
 
       {:noreply,
        assign(socket,
@@ -35,15 +63,15 @@ defmodule LiveCapture.Component.ShowLive do
            function: function,
            attrs: phoenix_component[:attrs],
            slots: phoenix_component[:slots],
-           slot_examples: capture_meta[:slots]
+           variants: variants,
+           variant: selected_variant,
+           custom_params: %{}
          }
        )}
     else
       {:noreply, socket}
     end
   end
-
-  def handle_params(_, _, socket), do: {:noreply, socket}
 
   def handle_event("change", params, socket) do
     custom_params =
@@ -79,6 +107,17 @@ defmodule LiveCapture.Component.ShowLive do
   end
 
   def render(assigns) do
+    payload = Plug.Conn.Query.encode(%{custom_params: assigns.component[:custom_params] || %{}})
+
+    url =
+      if assigns.component[:variant] do
+        "/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}/#{assigns.component[:variant]}?#{payload}"
+      else
+        "/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}?#{payload}"
+      end
+
+    assigns = assign(assigns, iframe_src: url)
+
     ~H"""
     <Components.Layout.show>
       <:sidebar>
@@ -101,7 +140,7 @@ defmodule LiveCapture.Component.ShowLive do
         <iframe
           :if={@component[:function]}
           class="h-full w-full bg-white absolute"
-          src={"/raw/components/#{@component[:module]}/#{@component[:function]}?#{Plug.Conn.Query.encode(%{custom_params: @component[:custom_params]})}"}
+          src={@iframe_src}
           style={iframe_style(@frame_configuration)}
         >
         </iframe>

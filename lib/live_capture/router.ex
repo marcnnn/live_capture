@@ -29,7 +29,9 @@ defmodule LiveCapture.Router do
         live_session :live_capture do
           live("/", LiveCapture.Component.ShowLive)
           live("/components/:module/:function", LiveCapture.Component.ShowLive)
+          live("/components/:module/:function/:variant", LiveCapture.Component.ShowLive)
           live("/raw/components/:module/:function", LiveCapture.RawComponent.ShowLive)
+          live("/raw/components/:module/:function/:variant", LiveCapture.RawComponent.ShowLive)
         end
 
         pipe_through :live_capture_static

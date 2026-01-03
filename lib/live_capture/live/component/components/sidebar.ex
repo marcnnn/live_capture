@@ -70,24 +70,72 @@ defmodule LiveCapture.Component.Components.Sidebar do
   attr :component, :map, required: true
 
   defp functions_list(assigns) do
-    assings = assign(assigns, selected_class: "")
-
     ~H"""
     <ul class="ml-4 py-2">
-      <li :for={{capture, _} <- @module.__captures__}>
-        <.link
-          navigate={"/components/#{@module}/#{capture}"}
-          class={[
-            "block border-l-2 px-3 cursor-pointer",
-            (capture == @component[:function] &&
-               "border-primary text-primary") ||
-              "hover:text-slate-900 hover:border-primary border-slate-300 text-slate-700"
-          ]}
-        >
-          <%= capture %>/<%= attr_count(@module, capture) %>
-        </.link>
-      </li>
+      <.function
+        :for={{capture, config} <- @module.__captures__}
+        module={@module}
+        capture={capture}
+        attr_count={attr_count(@module, capture)}
+        variants={Keyword.keys(config[:variants] || [])}
+        is_selected={capture == @component[:function]}
+        selected_variant={@component[:variant]}
+      />
     </ul>
+    """
+  end
+
+  attr :module, :any, required: true
+  attr :capture, :any, required: true
+  attr :attr_count, :integer, required: true
+  attr :variants, :list, default: []
+  attr :is_selected, :boolean, required: true
+  attr :selected_variant, :any
+
+  defp function(%{is_selected: true} = assigns) do
+    ~H"""
+    <li>
+      <div class="block border-l-2 border-primary px-3 cursor-pointer text-primary">
+        <%= @capture %>/<%= @attr_count %>
+      </div>
+
+      <ul :if={Enum.any?(@variants)} class="pt-1 pb-2">
+        <li :for={variant <- @variants}>
+          <.link
+            navigate={"/components/#{@module}/#{@capture}/#{variant}"}
+            class={[
+              "group flex items-center gap-2 px-3 cursor-pointer",
+              variant == @selected_variant &&
+                "text-primary",
+              variant != @selected_variant &&
+                "text-slate-700 hover:text-primary"
+            ]}
+          >
+            <span class={[
+              "text-primary font-md text-xl leading-none",
+              variant == @selected_variant && "opacity-100",
+              variant != @selected_variant && "opacity-0 group-hover:opacity-100"
+            ]}>
+              &bull;
+            </span>
+            <%= variant %>
+          </.link>
+        </li>
+      </ul>
+    </li>
+    """
+  end
+
+  defp function(%{is_selected: false} = assigns) do
+    ~H"""
+    <li>
+      <.link
+        navigate={"/components/#{@module}/#{@capture}"}
+        class="block border-l-2 px-3 cursor-pointer hover:text-primary hover:border-primary border-slate-300 text-slate-700"
+      >
+        <%= @capture %>/<%= @attr_count %>
+      </.link>
+    </li>
     """
   end
 

@@ -52,10 +52,15 @@ defmodule LiveCapture.Component do
     variants = module.__captures__ |> Map.get(function, %{}) |> Map.get(:variants, [])
 
     variant_config =
-      if(is_nil(variant),
-        do: List.first(variants) |> Kernel.||({nil, nil}) |> elem(1),
-        else: elem(variants[variant], 1)
-      ) || %{}
+      if variant do
+        Enum.find_value(variants, fn
+          {name, cfg} when name == variant -> cfg
+          _ -> nil
+        end)
+      else
+        List.first(variants) |> Kernel.||({nil, nil}) |> elem(1)
+      end ||
+        %{}
 
     variant_config = variant_config |> Map.put_new(:attrs, %{})
 
@@ -86,12 +91,20 @@ defmodule LiveCapture.Component do
     phoenix_component = Map.get(module.__components__, function, %{})
 
     variant_config =
-      if(is_nil(variant),
-        do: List.first(variants) |> Kernel.||({nil, nil}) |> elem(1),
-        else: elem(variants[variant], 1)
-      ) || %{}
+      if variant do
+        Enum.find_value(variants, fn
+          {name, cfg} when name == variant -> cfg
+          _ -> nil
+        end)
+      else
+        List.first(variants) |> Kernel.||({nil, nil}) |> elem(1)
+      end ||
+        %{}
 
-    variant_config = variant_config |> Map.put_new(:attrs, %{})
+    variant_config =
+      variant_config
+      |> Map.put_new(:attrs, %{})
+      |> Map.put_new(:slots, %{})
 
     phoenix_component = Map.get(module.__components__, function, %{})
 

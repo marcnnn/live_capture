@@ -142,11 +142,11 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp example_attrs(component) do
-    Component.attrs(component.module, component.function)
+    Component.attrs(component.module, component.function, component[:variant])
   end
 
   defp example_slots(component) do
-    Component.slots(component.module, component.function)
+    Component.slots(component.module, component.function, component[:variant])
   end
 
   defp attr_examples(list, example_values) do
@@ -273,9 +273,10 @@ defmodule LiveCapture.Component.Components.Docs do
     <%= for slot <- @slots do %>
       <%= for entry <- slot.entries do %>
         <div>
-          <%= highlight("  <:#{slot.name}", :punctuation) %><%= slot_attrs(entry.attrs) %><%=
-            highlight(">", :punctuation)
-          %>
+          <%= highlight("  <:#{slot.name}", :punctuation) %><%= slot_attrs(entry.attrs) %><%= highlight(
+            ">",
+            :punctuation
+          ) %>
         </div>
         <%= slot_content(entry.content, 2) %>
         <div><%= highlight("  </:#{slot.name}>", :punctuation) %></div>
@@ -287,7 +288,12 @@ defmodule LiveCapture.Component.Components.Docs do
   defp slot_attrs(attrs) do
     attrs
     |> Enum.flat_map(fn {name, value} ->
-      [" ", highlight_token(name, :attr_name), highlight_token("=", :operator), render_inline(value)]
+      [
+        " ",
+        highlight_token(name, :attr_name),
+        highlight_token("=", :operator),
+        render_inline(value)
+      ]
     end)
   end
 
@@ -295,7 +301,13 @@ defmodule LiveCapture.Component.Components.Docs do
 
   defp slot_content(content, indent) when is_binary(content) do
     padding = String.duplicate("&nbsp;", indent)
-    raw(["<div>", padding, Phoenix.HTML.Safe.to_iodata(highlight_token(content, :string)), "</div>"])
+
+    raw([
+      "<div>",
+      padding,
+      Phoenix.HTML.Safe.to_iodata(highlight_token(content, :string)),
+      "</div>"
+    ])
   end
 
   defp slot_content(content, indent) do
@@ -322,7 +334,13 @@ defmodule LiveCapture.Component.Components.Docs do
 
   defp slot_content(content, indent) when is_binary(content) do
     padding = String.duplicate("&nbsp;", indent)
-    raw(["<div>", padding, Phoenix.HTML.Safe.to_iodata(highlight_token(content, :string)), "</div>"])
+
+    raw([
+      "<div>",
+      padding,
+      Phoenix.HTML.Safe.to_iodata(highlight_token(content, :string)),
+      "</div>"
+    ])
   end
 
   defp slot_content(content, indent) do
