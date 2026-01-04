@@ -33,36 +33,28 @@ defmodule LiveCapture.Component.Components.Sidebar do
   attr :component, :map, required: true
   attr :is_selected, :boolean, required: true
 
-  defp section(assigns) do
+  defp section(assigns = %{is_selected: true}) do
     ~H"""
     <section class={[
-      "py-1 px-2 border-l-2 hover:border-primary hover:bg-primary/5",
+      "py-1 pl-2 pr-4 border-l-2 ",
       @is_selected && "bg-primary/5 border-primary"
     ]}>
-      <.module_title module={@module} is_selected={@is_selected} />
+      <div class="text-primary">
+        <%= @module |> to_string() |> String.replace_prefix("Elixir.", "") %>
+      </div>
       <.functions_list :if={@is_selected} module={@module} component={@component} />
     </section>
     """
   end
 
-  attr :module, :any, required: true
-  attr :is_selected, :boolean, required: true
-
-  defp module_title(%{is_selected: true} = assigns) do
+  defp section(assigns = %{is_selected: false}) do
     ~H"""
-    <div class="text-primary">
-      <%= @module %>
-    </div>
-    """
-  end
-
-  defp module_title(%{is_selected: false} = assigns) do
-    ~H"""
-    <div>
-      <.link navigate={"/components/#{@module}/#{Enum.at(@module.__captures__, 0) |> elem(0)}"}>
-        <%= @module %>
-      </.link>
-    </div>
+    <.link
+      navigate={"/components/#{@module}/#{Enum.at(@module.__captures__, 0) |> elem(0)}"}
+      class="block py-1 pl-2 pr-4 border-l-2 hover:border-primary hover:bg-primary/5 hover:text-primary"
+    >
+      <%= @module |> to_string() |> String.replace_prefix("Elixir.", "") %>
+    </.link>
     """
   end
 
