@@ -45,10 +45,6 @@ defmodule LiveCapture.Component do
     capture_all = Module.get_attribute(env.module, :capture_all) && length(args) == 1
 
     if capture || capture_all do
-      quote do
-        Module.put_attribute(__MODULE__, :list, MapSet.put(@list, env.module))
-      end
-
       captures =
         Module.get_attribute(env.module, :__captures__)
         |> Map.update(name, capture || %{}, fn value -> Map.merge(value, capture || %{}) end)
@@ -58,8 +54,18 @@ defmodule LiveCapture.Component do
   end
 
   def list do
-    {:ok, list} = :application.get_key(:live_capture, :modules)
-    list |> Enum.filter(&(&1.__info__(:functions) |> Keyword.has_key?(:__captures__)))
+    apps = Application.get_env(:live_capture, :apps, [])
+    apps = if Enum.empty?(apps), do: [:live_capture], else: apps
+
+    apps
+    |> Enum.flat_map(fn app ->
+      case :application.get_key(app, :modules) do
+        {:ok, modules} -> modules
+        _ -> []
+      end
+    end)
+    |> Enum.uniq()
+    |> Enum.filter(&(&1.__info__(:functions) |> Keyword.has_key?(:__captures__)))
   end
 
   def attrs(module, function, variant \\ nil) do
