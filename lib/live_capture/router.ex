@@ -5,6 +5,21 @@ defmodule LiveCapture.Router do
     def call(conn, _), do: put_private(conn, :plug_skip_csrf_protection, true)
   end
 
+  defmodule __MODULE__.AssignPath do
+    import Plug.Conn
+
+    def init(opts), do: opts
+
+    def call(conn, opts) do
+      path = opts[:path] || "/"
+      assign(conn, :live_capture_path, path)
+    end
+
+    def on_mount(path, _params, _session, socket) do
+      {:cont, Phoenix.Component.assign(socket, :live_capture_path, path || "/")}
+    end
+  end
+
   defmacro live_capture(path) do
     quote bind_quoted: binding() do
       import Phoenix.Router
@@ -12,14 +27,16 @@ defmodule LiveCapture.Router do
 
       pipeline :live_capture_static do
         plug LiveCapture.Router.Assets
+        plug LiveCapture.Router.AssignPath, path: path
 
         plug Plug.Static,
-          at: "/",
+          at: path,
           from: :live_capture,
           only: ~w(css js)
       end
 
       pipeline :live_capture_browser do
+        plug LiveCapture.Router.AssignPath, path: path
         plug :put_root_layout, html: {LiveCapture.Layouts, :root}
       end
 

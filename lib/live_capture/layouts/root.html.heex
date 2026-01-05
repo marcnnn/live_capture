@@ -4,8 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={Phoenix.Controller.get_csrf_token()} />
-    <link rel="stylesheet" href="/css/app.css" />
-    <script src="/js/app.js" defer></script>
+    <% asset_root = @conn.assigns[:live_capture_path] || "/" %>
+    <link rel="stylesheet" href={Path.join(asset_root, "css/app.css")} />
+    <script src={Path.join(asset_root, "js/app.js")} defer></script>
   </head>
   <body>
     <%= @inner_content %>
