@@ -454,8 +454,6 @@ defmodule LiveCapture.Component.Components.Docs do
     inner = render_pairs(fields, indent + 2)
     close = {indent, [highlight_token("}", :punctuation)]}
 
-    IO.inspect([module, [open | inner] ++ [close], indent])
-
     collapsible_struct(module, [open | inner] ++ [close], indent)
   end
 
