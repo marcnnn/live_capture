@@ -671,12 +671,21 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp long_list?(list) do
-    list
-    |> inspect()
-    |> Code.format_string!()
-    |> IO.iodata_to_binary()
-    |> String.length()
-    |> Kernel.>(100)
+    try do
+      list
+      |> inspect()
+      |> Code.format_string!()
+      |> IO.iodata_to_binary()
+      |> String.graphemes()
+      |> Enum.count(&(&1 == "\n"))
+      |> Kernel.>(4)
+    rescue
+      _ ->
+        list
+        |> inspect()
+        |> String.length()
+        |> Kernel.>(50)
+    end
   end
 
   defp color(category), do: Map.get(@theme.colors, category, @theme.colors[:default])
