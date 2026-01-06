@@ -56,6 +56,7 @@ defmodule LiveCapture.Component do
   def list do
     apps = Application.get_env(:live_capture, :apps, [])
     apps = if Enum.empty?(apps), do: [:live_capture], else: apps
+    include_live_capture? = Enum.member?(apps, :live_capture)
 
     apps
     |> Enum.flat_map(fn app ->
@@ -63,6 +64,10 @@ defmodule LiveCapture.Component do
         {:ok, modules} -> modules
         _ -> []
       end
+    end)
+    |> Enum.reject(fn module ->
+      not include_live_capture? and
+        (module |> Atom.to_string() |> String.starts_with?("Elixir.LiveCapture"))
     end)
     |> Enum.uniq()
     |> Enum.filter(fn module ->
