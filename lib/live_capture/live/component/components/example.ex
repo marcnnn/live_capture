@@ -21,7 +21,7 @@ defmodule LiveCapture.Component.Components.Example do
 
   def complex(assigns) do
     ~H"""
-    <p>Hello <%= @title %>!</p>
+    <p>Hello {@title}!</p>
     """
   end
 
@@ -50,10 +50,10 @@ defmodule LiveCapture.Component.Components.Example do
   def with_slot(assigns) do
     ~H"""
     <div>
-      <h3><%= @title %></h3>
+      <h3>{@title}</h3>
 
       <div>
-        <%= render_slot(@inner_block) %>
+        {render_slot(@inner_block)}
       </div>
 
       <ul>
@@ -61,7 +61,7 @@ defmodule LiveCapture.Component.Components.Example do
           <li>No cities listed.</li>
         <% else %>
           <li :for={city <- @cities}>
-            <strong><%= city.name %></strong>: <%= render_slot(city) %>
+            <strong><%= city.name %></strong>: {render_slot(city)}
           </li>
         <% end %>
       </ul>

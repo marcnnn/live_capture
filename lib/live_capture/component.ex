@@ -67,7 +67,7 @@ defmodule LiveCapture.Component do
     end)
     |> Enum.reject(fn module ->
       not include_live_capture? and
-        (module |> Atom.to_string() |> String.starts_with?("Elixir.LiveCapture"))
+        module |> Atom.to_string() |> String.starts_with?("Elixir.LiveCapture")
     end)
     |> Enum.uniq()
     |> Enum.filter(fn module ->

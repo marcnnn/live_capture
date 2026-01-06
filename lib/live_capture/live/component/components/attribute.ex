@@ -92,16 +92,16 @@ defmodule LiveCapture.Component.Components.Attribute do
 
   def show(assigns) do
     ~H"""
-    Unsupported type: `<%= inspect(@attr[:type]) %>`
+    Unsupported type: `{inspect(@attr[:type])}`
     """
   end
 
   defp attr_row(assigns) do
     ~H"""
     <div class="flex gap-4 items-center">
-      <div><%= @name %></div>
-      <div class="border bg-gray-200 px-3 py-1 rounded-xl"><%= @type %></div>
-      <%= render_slot(@inner_block) %>
+      <div>{@name}</div>
+      <div class="border bg-gray-200 px-3 py-1 rounded-xl">{@type}</div>
+      {render_slot(@inner_block)}
     </div>
     """
   end

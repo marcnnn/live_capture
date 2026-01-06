@@ -38,7 +38,7 @@ defmodule LiveCapture.Component.Components.Form do
             (@field.value == option && "text-primary border-primary") || "border-transparent"
           ]}
         >
-          <%= option %>
+          {option}
         </label>
       </div>
     </div>
