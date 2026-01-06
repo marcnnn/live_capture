@@ -1,6 +1,16 @@
 defmodule LiveCapture.RawComponent.ShowLive do
   use LiveCapture.Web, :live_view
 
+  def render(assigns) do
+    ~H"""
+    {Phoenix.LiveView.TagEngine.component(
+      Function.capture(@module, @function, 1),
+      @attrs,
+      {__ENV__.module, __ENV__.function, __ENV__.file, __ENV__.line}
+    )}
+    """
+  end
+
   def mount(params, session, socket) do
     module = LiveCapture.Component.list() |> Enum.find(&(to_string(&1) == params["module"]))
 
@@ -27,16 +37,6 @@ defmodule LiveCapture.RawComponent.ShowLive do
      )}
   end
 
-  def render(assigns) do
-    ~H"""
-    <%= Phoenix.LiveView.TagEngine.component(
-      Function.capture(@module, @function, 1),
-      @attrs,
-      {__ENV__.module, __ENV__.function, __ENV__.file, __ENV__.line}
-    ) %>
-    """
-  end
-
   defp select_variant(variants, variant_param) do
     cond do
       variant_param in [nil, ""] && variants != [] ->
@@ -51,5 +51,9 @@ defmodule LiveCapture.RawComponent.ShowLive do
       true ->
         nil
     end
+  end
+
+  def handle_event(_name, _params, socket) do
+    {:noreply, socket}
   end
 end
