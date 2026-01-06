@@ -11,19 +11,22 @@ defmodule LiveCapture.Router do
     def init(opts), do: opts
 
     def call(conn, opts) do
-      path = opts[:path] || "/"
+      path = (opts[:path] == "/" && "") || opts[:path]
       assign(conn, :live_capture_path, path)
     end
 
     def on_mount(path, _params, _session, socket) do
-      {:cont, Phoenix.Component.assign(socket, :live_capture_path, path || "/")}
+      {:cont, Phoenix.Component.assign(socket, :live_capture_path, (path == "/" && "") || path)}
     end
   end
 
-  defmacro live_capture(path) do
-    quote bind_quoted: binding() do
+  defmacro live_capture(path, opts \\ []) do
+    quote bind_quoted: [path: path, opts: opts] do
       import Phoenix.Router
-      import Phoenix.LiveView.Router, only: [live: 2, live_session: 2]
+      import Phoenix.LiveView.Router, only: [live: 2, live_session: 3]
+
+      default_root_layout = {LiveCapture.Layouts, :root}
+      raw_root_layout = Keyword.get(opts, :root_layout, default_root_layout)
 
       pipeline :live_capture_static do
         plug LiveCapture.Router.Assets
@@ -37,16 +40,22 @@ defmodule LiveCapture.Router do
 
       pipeline :live_capture_browser do
         plug LiveCapture.Router.AssignPath, path: path
-        plug :put_root_layout, html: {LiveCapture.Layouts, :root}
       end
 
       scope path do
         pipe_through :live_capture_browser
 
-        live_session :live_capture do
+        live_session :live_capture,
+          on_mount: {LiveCapture.Router.AssignPath, path},
+          root_layout: default_root_layout do
           live("/", LiveCapture.Component.ShowLive)
           live("/components/:module/:function", LiveCapture.Component.ShowLive)
           live("/components/:module/:function/:variant", LiveCapture.Component.ShowLive)
+        end
+
+        live_session :live_capture_raw,
+          on_mount: {LiveCapture.Router.AssignPath, path},
+          root_layout: raw_root_layout do
           live("/raw/components/:module/:function", LiveCapture.RawComponent.ShowLive)
           live("/raw/components/:module/:function/:variant", LiveCapture.RawComponent.ShowLive)
         end
