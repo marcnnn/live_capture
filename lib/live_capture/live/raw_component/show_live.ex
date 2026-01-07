@@ -1,59 +1,43 @@
 defmodule LiveCapture.RawComponent.ShowLive do
   use LiveCapture.Web, :live_view
 
+  def render(%{module: nil} = assigns),
+    do: ~H"<div class=\"p-4 text-red-600\">Module doesn't exist</div>"
+
+  def render(%{function: nil} = assigns),
+    do: ~H"<div class=\"p-4 text-red-600\">Function doesn't exist</div>"
+
   def render(assigns) do
     ~H"""
-    {Phoenix.LiveView.TagEngine.component(
-      Function.capture(@module, @function, 1),
-      @attrs,
-      {__ENV__.module, __ENV__.function, __ENV__.file, __ENV__.line}
-    )}
+    {LiveCapture.Component.render(__ENV__, @module, @function, @variant)}
     """
   end
 
-  def mount(params, session, socket) do
+  def mount(params, _session, socket) do
     module = LiveCapture.Component.list() |> Enum.find(&(to_string(&1) == params["module"]))
 
     function =
-      module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == params["function"]))
-
-    variants =
-      module.__captures__
-      |> Map.get(function, %{})
-      |> Map.get(:variants, [])
-      |> Keyword.keys()
-
-    variant = select_variant(variants, params["variant"])
-
-    attrs = LiveCapture.Component.attrs(module, function, variant)
-    slots = LiveCapture.Component.slots(module, function, variant)
+      module &&
+        module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == params["function"]))
 
     {:ok,
      assign(socket,
        module: module,
        function: function,
-       variant: variant,
-       attrs: Map.merge(attrs, slots)
+       variant: normalize_variant(params["variant"])
      )}
-  end
-
-  defp select_variant(variants, variant_param) do
-    cond do
-      variant_param in [nil, ""] && variants != [] ->
-        List.first(variants)
-
-      variant_param && variant_param in Enum.map(variants, &to_string/1) ->
-        String.to_existing_atom(variant_param)
-
-      variants != [] ->
-        List.first(variants)
-
-      true ->
-        nil
-    end
   end
 
   def handle_event(_name, _params, socket) do
     {:noreply, socket}
+  end
+
+  defp normalize_variant(nil), do: nil
+  defp normalize_variant(""), do: nil
+
+  defp normalize_variant(variant_param) do
+    String.to_existing_atom(variant_param)
+  rescue
+    ArgumentError -> nil
   end
 end

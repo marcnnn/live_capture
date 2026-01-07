@@ -53,6 +53,44 @@ defmodule LiveCapture.Component do
     end
   end
 
+  def render(env, module, function, variant \\ nil) do
+    attributes = attributes(module, function, variant)
+
+    slot_keys =
+      module.__components__
+      |> Map.get(function, %{})
+      |> Map.get(:slots, [])
+      |> Enum.map(& &1.name)
+
+    normalize_slot = fn slot_key, slot_value ->
+      slot_value
+      |> Map.put(:__slot__, slot_key)
+      |> Map.replace(:inner_block, fn _, _ -> slot_value.inner_block end)
+    end
+
+    attributes =
+      Enum.reduce(attributes, %{}, fn {key, value}, acc ->
+        if Enum.member?(slot_keys, key) do
+          slot =
+            cond do
+              is_map(value) -> normalize_slot.(key, value)
+              is_list(value) -> Enum.map(value, &normalize_slot.(key, &1))
+              true -> normalize_slot.(key, %{inner_block: value})
+            end
+
+          Map.put(acc, key, slot)
+        else
+          Map.put(acc, key, value)
+        end
+      end)
+
+    Phoenix.LiveView.TagEngine.component(
+      Function.capture(module, function, 1),
+      attributes,
+      {env.module, env.function, env.file, env.line}
+    )
+  end
+
   def list do
     apps = Application.get_env(:live_capture, :apps, [])
     apps = if Enum.empty?(apps), do: [:live_capture], else: apps

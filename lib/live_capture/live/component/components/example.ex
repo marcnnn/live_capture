@@ -75,7 +75,7 @@ defmodule LiveCapture.Component.Components.Example do
   def with_slots(assigns) do
     ~H"""
     <div>
-      <h3>{@header}</h3>
+      <h3>{render_slot(@header)}</h3>
 
       <div>
         {render_slot(@inner_block)}

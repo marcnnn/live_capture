@@ -61,4 +61,50 @@ defmodule LiveCapture.ComponentTest do
       assert LiveCapture.Component.attributes(Example, :with_slots) == attributes
     end
   end
+
+  describe "render/3" do
+    test "wihtout arguments" do
+      assert component_render(Example, :simple) =~ "Hello, World"
+    end
+
+    test "with default argument" do
+      assert component_render(Example, :with_default) =~ "Hello, World"
+    end
+
+    test "with example argument" do
+      assert component_render(Example, :with_example) =~ "Hello, World"
+    end
+
+    test "with caputure attributes" do
+      assert component_render(Example, :with_capture_attributes) =~ "Hello, Galaxy"
+    end
+
+    test "with caputure attributes and without attrs" do
+      assert component_render(Example, :without_attrs) =~ "Hello, World"
+    end
+
+    test "with caputure default variant" do
+      assert component_render(Example, :with_capture_variants) =~ "Hello, Main"
+    end
+
+    test "with caputure variant" do
+      assert component_render(Example, :with_capture_variants, :secondary) =~ "Hello, Secondary"
+    end
+
+    test "with slots" do
+      rendered = component_render(Example, :with_slots)
+
+      assert rendered =~ "Cities"
+      assert rendered =~ "This is inner slot content."
+      assert rendered =~ "Paris</strong>: France"
+      assert rendered =~ "Berlin</strong>: Germany"
+    end
+  end
+
+  defp component_render(module, function, variant \\ nil) do
+    {:safe, list} =
+      __ENV__ |> LiveCapture.Component.render(module, function, variant) |> Phoenix.HTML.html_escape()
+
+    Enum.join(list)
+  end
 end
