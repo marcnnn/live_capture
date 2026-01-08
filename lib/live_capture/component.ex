@@ -53,14 +53,17 @@ defmodule LiveCapture.Component do
     end
   end
 
+  def slot_names(module, function) do
+    module.__components__
+    |> Map.get(function, %{})
+    |> Map.get(:slots, [])
+    |> Enum.map(& &1.name)
+  end
+
   def render(env, module, function, variant \\ nil) do
     attributes = attributes(module, function, variant)
 
-    slot_keys =
-      module.__components__
-      |> Map.get(function, %{})
-      |> Map.get(:slots, [])
-      |> Enum.map(& &1.name)
+    slot_keys = slot_names(module, function)
 
     normalize_slot = fn slot_key, slot_value ->
       slot_value
