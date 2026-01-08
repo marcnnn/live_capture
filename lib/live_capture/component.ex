@@ -54,7 +54,7 @@ defmodule LiveCapture.Component do
   end
 
   def slot_names(module, function) do
-    module.__components__
+    module.__components__()
     |> Map.get(function, %{})
     |> Map.get(:slots, [])
     |> Enum.map(& &1.name)
@@ -114,13 +114,13 @@ defmodule LiveCapture.Component do
     |> Enum.filter(fn module ->
       has_captures = module.__info__(:functions) |> Keyword.has_key?(:__captures__)
 
-      has_captures && Enum.any?(module.__captures__)
+      has_captures && Enum.any?(module.__captures__())
     end)
   end
 
   def attributes(module, function, variant \\ nil) do
     default_attributes =
-      module.__components__
+      module.__components__()
       |> Map.get(function, %{})
       |> Map.get(:attrs, [])
       |> Enum.reduce(%{}, fn attr, acc ->
@@ -135,9 +135,9 @@ defmodule LiveCapture.Component do
       end)
 
     default_capture_attributes =
-      module.__captures__ |> Map.get(function, %{}) |> Map.get(:attributes, %{})
+      module.__captures__() |> Map.get(function, %{}) |> Map.get(:attributes, %{})
 
-    variants = module.__captures__ |> Map.get(function, %{}) |> Map.get(:variants, [])
+    variants = module.__captures__() |> Map.get(function, %{}) |> Map.get(:variants, [])
 
     variant_attributes =
       Keyword.get_lazy(variants, variant, fn ->

@@ -2,10 +2,14 @@ defmodule LiveCapture.RawComponent.ShowLive do
   use LiveCapture.Web, :live_view
 
   def render(%{module: nil} = assigns),
-    do: ~H"<div class=\"p-4 text-red-600\">Module doesn't exist</div>"
+    do: ~H"""
+    <div class="p-4 text-red-600">Module doesn't exist</div>
+    """
 
   def render(%{function: nil} = assigns),
-    do: ~H"<div class=\"p-4 text-red-600\">Function doesn't exist</div>"
+    do: ~H"""
+    <div class="p-4 text-red-600">Function doesn't exist</div>
+    """
 
   def render(assigns) do
     ~H"""

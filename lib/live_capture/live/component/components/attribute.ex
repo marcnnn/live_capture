@@ -26,6 +26,7 @@ defmodule LiveCapture.Component.Components.Attribute do
   end
 
   attr :attr, :map, examples: [%{name: :name, type: :string}]
+  attr :custom_param, :any, default: nil
 
   capture()
 
@@ -107,7 +108,9 @@ defmodule LiveCapture.Component.Components.Attribute do
   end
 
   defp set_value(assigns) do
-    value = Keyword.get(assigns.attr[:opts] || [], :examples, []) |> List.first()
+    examples = Keyword.get(assigns.attr[:opts] || [], :examples, [])
+    default_value = List.first(examples)
+    value = assigns.custom_param || default_value
 
     assign(assigns, value: value)
   end

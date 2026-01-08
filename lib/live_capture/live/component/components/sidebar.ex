@@ -59,7 +59,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
   defp section(assigns = %{is_selected: false}) do
     ~H"""
     <.link
-      navigate={"#{@live_capture_path}/components/#{@module}/#{Enum.at(@module.__captures__, 0) |> elem(0)}"}
+      navigate={"#{@live_capture_path}/components/#{@module}/#{Enum.at(@module.__captures__(), 0) |> elem(0)}"}
       class="block py-1 pl-2 pr-4 border-l-2 hover:border-primary hover:bg-primary/5 hover:text-primary"
     >
       {@module |> to_string() |> String.replace_prefix("Elixir.", "")}
@@ -75,7 +75,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
     ~H"""
     <ul class="ml-4 py-2">
       <.function
-        :for={{capture, config} <- @module.__captures__}
+        :for={{capture, config} <- @module.__captures__()}
         module={@module}
         capture={capture}
         attr_count={attr_count(@module, capture)}
@@ -94,6 +94,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
   attr :variants, :list, default: []
   attr :is_selected, :boolean, required: true
   attr :selected_variant, :any
+  attr :live_capture_path, :string, required: true
 
   defp function(%{is_selected: true} = assigns) do
     ~H"""
@@ -143,7 +144,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
   end
 
   defp attr_count(module, capture) do
-    module.__components__
+    module.__components__()
     |> Map.get(capture, %{})
     |> Map.get(:attrs, [])
     |> length()

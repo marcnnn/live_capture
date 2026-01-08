@@ -71,7 +71,11 @@ defmodule LiveCapture.Component.Components.Docs do
 
   defp component_call(assigns) do
     attributes =
-      Component.attributes(assigns.component.module, assigns.component.function, assigns.component[:variant]) ||
+      Component.attributes(
+        assigns.component.module,
+        assigns.component.function,
+        assigns.component[:variant]
+      ) ||
         %{}
 
     slot_names = Component.slot_names(assigns.component.module, assigns.component.function)
@@ -101,7 +105,7 @@ defmodule LiveCapture.Component.Components.Docs do
         {highlight("<", :punctuation)}{highlight(@aliased_name, :module)}.{highlight(
           @function_name,
           :function
-        )}<%= if !@has_attrs and @has_slots, do: highlight(">", :punctuation) %>
+        )}{if !@has_attrs and @has_slots, do: highlight(">", :punctuation)}
       </div>
       <.attrs :if={@has_attrs} list={@attrs} />
       <%= if !@has_slots do %>
@@ -285,12 +289,6 @@ defmodule LiveCapture.Component.Components.Docs do
     """
   end
 
-  defp highlight(value) do
-    value
-    |> value_lines(0)
-    |> lines_to_html()
-  end
-
   defp render_value_lines(value, indent) do
     value
     |> value_lines(indent)
@@ -340,31 +338,6 @@ defmodule LiveCapture.Component.Components.Docs do
     end
   end
 
-  defp list_lines(list, indent) do
-    if inline_list?(list) do
-      parts =
-        list
-        |> Enum.map(&value_lines(&1, 0))
-        |> Enum.map(&lines_to_tokens/1)
-        |> Enum.intersperse(highlight_token(", ", :punctuation))
-
-      [{indent, [highlight_token("[", :punctuation), parts, highlight_token("]", :punctuation)]}]
-    else
-      open = {indent, [highlight_token("[", :punctuation)]}
-
-      inner =
-        list
-        |> Enum.with_index()
-        |> Enum.flat_map(fn {item, idx} ->
-          suffix = if idx < length(list) - 1, do: highlight_token(",", :punctuation), else: nil
-          item |> value_lines(indent + 2) |> append_suffix(suffix)
-        end)
-
-      close = {indent, [highlight_token("]", :punctuation)]}
-      [open | inner] ++ [close]
-    end
-  end
-
   defp value_lines(%struct{} = value, indent) do
     module =
       struct
@@ -395,15 +368,6 @@ defmodule LiveCapture.Component.Components.Docs do
     end
   end
 
-  defp map_lines(map, indent) do
-    pairs = map |> Enum.to_list()
-    open = {indent, [highlight_token("%{", :punctuation)]}
-    inner = render_pairs(pairs, indent + 2)
-    close = {indent, [highlight_token("}", :punctuation)]}
-
-    [open | inner] ++ [close]
-  end
-
   defp value_lines({a, b}, indent) do
     open = {indent, [highlight_token("{", :punctuation)]}
 
@@ -420,6 +384,40 @@ defmodule LiveCapture.Component.Components.Docs do
 
   defp value_lines(value, indent) do
     [{indent, [highlight_token(inspect(value), :value)]}]
+  end
+
+  defp list_lines(list, indent) do
+    if inline_list?(list) do
+      parts =
+        list
+        |> Enum.map(&value_lines(&1, 0))
+        |> Enum.map(&lines_to_tokens/1)
+        |> Enum.intersperse(highlight_token(", ", :punctuation))
+
+      [{indent, [highlight_token("[", :punctuation), parts, highlight_token("]", :punctuation)]}]
+    else
+      open = {indent, [highlight_token("[", :punctuation)]}
+
+      inner =
+        list
+        |> Enum.with_index()
+        |> Enum.flat_map(fn {item, idx} ->
+          suffix = if idx < length(list) - 1, do: highlight_token(",", :punctuation), else: nil
+          item |> value_lines(indent + 2) |> append_suffix(suffix)
+        end)
+
+      close = {indent, [highlight_token("]", :punctuation)]}
+      [open | inner] ++ [close]
+    end
+  end
+
+  defp map_lines(map, indent) do
+    pairs = map |> Enum.to_list()
+    open = {indent, [highlight_token("%{", :punctuation)]}
+    inner = render_pairs(pairs, indent + 2)
+    close = {indent, [highlight_token("}", :punctuation)]}
+
+    [open | inner] ++ [close]
   end
 
   defp render_pairs(pairs, indent) do

@@ -9,6 +9,7 @@ defmodule LiveCapture.MixProject do
       version: @version,
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env()),
+      listeners: [Phoenix.CodeReloader],
       deps: deps(),
       aliases: aliases()
     ]

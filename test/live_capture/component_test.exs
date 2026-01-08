@@ -103,7 +103,9 @@ defmodule LiveCapture.ComponentTest do
 
   defp component_render(module, function, variant \\ nil) do
     {:safe, list} =
-      __ENV__ |> LiveCapture.Component.render(module, function, variant) |> Phoenix.HTML.html_escape()
+      __ENV__
+      |> LiveCapture.Component.render(module, function, variant)
+      |> Phoenix.HTML.html_escape()
 
     Enum.join(list)
   end
