@@ -296,10 +296,23 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp render_inline(value) do
-    value
-    |> value_lines(0)
-    |> inline_tokens()
-    |> raw()
+    tokens =
+      value
+      |> value_lines(0)
+      |> inline_tokens()
+
+    wrapped_tokens =
+      if is_binary(value) do
+        tokens
+      else
+        [
+          highlight_token("{", :punctuation) |> Phoenix.HTML.Safe.to_iodata(),
+          tokens,
+          highlight_token("}", :punctuation) |> Phoenix.HTML.Safe.to_iodata()
+        ]
+      end
+
+    raw(wrapped_tokens)
   end
 
   defp multiline_value?(value) when is_map(value) or is_list(value) or is_tuple(value), do: true
