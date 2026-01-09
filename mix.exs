@@ -11,7 +11,11 @@ defmodule LiveCapture.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       listeners: [Phoenix.CodeReloader],
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      docs: &docs/0,
+      source_url: "https://github.com/achempion/live_capture",
+      description: description(),
+      package: package()
     ]
   end
 
@@ -19,6 +23,26 @@ defmodule LiveCapture.MixProject do
 
   def application do
     [extra_applications: [:logger]]
+  end
+
+  defp description() do
+    "Increase UI quality of your product by capturing visual states of LiveView components."
+  end
+
+  defp package() do
+    [
+      maintainers: ["Boris Kuznetsov"],
+      files: ~w(mix.exs README.md CHANGELOG.md LICENSE lib priv),
+      licenses: ["Apache-2.0"],
+      links: %{"GitHub" => "https://github.com/achempion/live_capture"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: ["README.md"]
+    ]
   end
 
   defp deps do
@@ -30,13 +54,18 @@ defmodule LiveCapture.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:jason, "~> 1.0", only: :dev},
       {:esbuild, "~> 0.8", only: :dev},
-      {:tailwind, "~> 0.2", only: :dev}
+      {:tailwind, "~> 0.2", only: :dev},
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false, warn_if_outdated: true}
     ]
   end
 
   defp aliases do
     [
-      dev: "run --no-halt dev.exs"
+      dev: "run --no-halt dev.exs",
+      "assets.deploy": [
+        "tailwind live_capture --minify",
+        "esbuild live_capture --minify"
+      ]
     ]
   end
 end

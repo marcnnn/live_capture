@@ -55,7 +55,7 @@ def my_component(assigns) do
 end
 ```
 
-Explore the main capture patterns in [example.ex](/lib/live_capture/live/component/components/example.ex)
+Explore the main capture patterns in [example.ex](https://github.com/achempion/live_capture/blob/main/lib/live_capture/live/component/components/example.ex)
 
 ## Capture patterns
 
