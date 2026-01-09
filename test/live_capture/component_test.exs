@@ -4,7 +4,7 @@ defmodule LiveCapture.ComponentTest do
   alias LiveCapture.Component.Components.Example
 
   describe "attributes/3" do
-    test "wihtout arguments" do
+    test "without arguments" do
       attributes = %{}
 
       assert LiveCapture.Component.attributes(Example, :simple) == attributes
@@ -22,26 +22,26 @@ defmodule LiveCapture.ComponentTest do
       assert LiveCapture.Component.attributes(Example, :with_example) == attributes
     end
 
-    test "with caputure attributes" do
+    test "with capture attributes" do
       attributes = %{title: "Galaxy"}
 
       assert LiveCapture.Component.attributes(Example, :with_capture_attributes) == attributes
     end
 
-    test "with caputure attributes and without attrs" do
+    test "with capture attributes and without attrs" do
       attributes = %{title: "World"}
 
       assert LiveCapture.Component.attributes(Example, :without_attrs) == attributes
     end
 
-    test "with caputure default variant" do
+    test "with capture default variant" do
       attributes = %{title: "Main"}
 
       assert LiveCapture.Component.attributes(Example, :with_capture_variants) ==
                attributes
     end
 
-    test "with caputure variant" do
+    test "with capture variant" do
       attributes = %{title: "Secondary"}
 
       assert LiveCapture.Component.attributes(Example, :with_capture_variants, :secondary) ==
@@ -63,7 +63,7 @@ defmodule LiveCapture.ComponentTest do
   end
 
   describe "render/3" do
-    test "wihtout arguments" do
+    test "without arguments" do
       assert component_render(Example, :simple) =~ "Hello, World"
     end
 
@@ -75,19 +75,19 @@ defmodule LiveCapture.ComponentTest do
       assert component_render(Example, :with_example) =~ "Hello, World"
     end
 
-    test "with caputure attributes" do
+    test "with capture attributes" do
       assert component_render(Example, :with_capture_attributes) =~ "Hello, Galaxy"
     end
 
-    test "with caputure attributes and without attrs" do
+    test "with capture attributes and without attrs" do
       assert component_render(Example, :without_attrs) =~ "Hello, World"
     end
 
-    test "with caputure default variant" do
+    test "with capture default variant" do
       assert component_render(Example, :with_capture_variants) =~ "Hello, Main"
     end
 
-    test "with caputure variant" do
+    test "with capture variant" do
       assert component_render(Example, :with_capture_variants, :secondary) =~ "Hello, Secondary"
     end
 
