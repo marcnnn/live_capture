@@ -16,6 +16,7 @@ if config_env() == :dev do
       --config=tailwind.config.js
       --input=css/app.css
       --output=../priv/static/css/app.css
+      --minify
     ),
       cd: Path.expand("../assets", __DIR__)
     ]
