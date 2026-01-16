@@ -1,6 +1,6 @@
 # LiveCapture
 
-Improve the UI quality of your product by capturing visual states of LiveView components.
+LiveCapture helps you create high-quality LiveView components faster
 
 [Explore component libraries](https://captures.captureui.com/)
 
