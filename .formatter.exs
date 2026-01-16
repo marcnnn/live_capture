@@ -2,6 +2,7 @@ locals_without_parens = [
   embed_templates: 1,
   embed_templates: 2,
   breakpoints: 1,
+  plugs: 1,
   root_layout: 1,
   capture: 1,
   live_capture: 1,
