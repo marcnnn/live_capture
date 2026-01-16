@@ -3,6 +3,7 @@ defmodule LiveCapture.Router do
     quote bind_quoted: [path: path, component_loaders: component_loaders, opts: opts] do
       import Phoenix.Router
       import Phoenix.LiveView.Router, only: [live: 2, live_session: 3]
+      alias LiveCapture.Plugs
 
       component_loaders = List.wrap(component_loaders)
 

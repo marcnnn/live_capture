@@ -2,10 +2,11 @@ defmodule LiveCapture.Component do
   defmodule Config do
     defmacro __using__(_) do
       quote do
-        import LiveCapture.Component.Config, only: [breakpoints: 1, root_layout: 1]
+        import LiveCapture.Component.Config, only: [breakpoints: 1, root_layout: 1, plugs: 1]
 
         @breakpoints []
         @root_layout {LiveCapture.Layouts, :root}
+        @plugs []
 
         @before_compile LiveCapture.Component.Config
       end
@@ -31,10 +32,21 @@ defmodule LiveCapture.Component do
       end
     end
 
+    defmacro plugs(list) do
+      quote do
+        Module.put_attribute(
+          __MODULE__,
+          :plugs,
+          unquote(list)
+        )
+      end
+    end
+
     defmacro __before_compile__(_env) do
       quote do
         def breakpoints(), do: @breakpoints
         def root_layout(), do: @root_layout
+        def plugs(), do: @plugs
       end
     end
   end
