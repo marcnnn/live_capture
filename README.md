@@ -2,6 +2,8 @@
 
 Improve the UI quality of your product by capturing visual states of LiveView components.
 
+[Explore component libraries](https://captures.captureui.com/)
+
 ## Features
 
  - Render HEEx components with predefined state snapshots
