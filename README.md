@@ -11,10 +11,18 @@ Improve the UI quality of your product by capturing visual states of LiveView co
 
 ## Quick start
 
-Add the `:live_capture` dependency to `mix.exs`.
+Add the `:live_capture` dependency to the `mix.exs` and `.formatter.exs`.
 
+**mix.exs**
 ```elixir
 {:live_capture, "~> 0.2"}
+```
+
+**.formatter.exs**
+```elixir
+[
+  import_deps: [:live_capture, ...]
+]
 ```
 
 Define a configuration module.

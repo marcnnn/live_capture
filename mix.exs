@@ -32,7 +32,7 @@ defmodule LiveCapture.MixProject do
   defp package() do
     [
       maintainers: ["Boris Kuznetsov"],
-      files: ~w(mix.exs README.md CHANGELOG.md LICENSE lib priv),
+      files: ~w(mix.exs README.md CHANGELOG.md LICENSE lib priv .formatter.exs),
       licenses: ["Apache-2.0"],
       links: %{"GitHub" => "https://github.com/achempion/live_capture"}
     ]
