@@ -53,7 +53,7 @@ defmodule LiveCapture.RawComponent.ShowLive do
   defp conn_assigns_from_session(session) do
     %{
       csp_style_nonce: session["csp_style_nonce"],
-      csp_script_nounce: session["csp_script_nounce"]
+      csp_script_nonce: session["csp_script_nonce"]
     }
   end
 end

@@ -18,7 +18,7 @@ defmodule LiveCapture.Plugs.AssetsConfig do
 
     %{
       "csp_style_nonce" => style_nonce,
-      "csp_script_nounce" => script_nonce
+      "csp_script_nonce" => script_nonce
     }
   end
 

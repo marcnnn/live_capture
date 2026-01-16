@@ -189,6 +189,35 @@ defmodule MyAppWeb.LiveCaptureWebFactory do
 end
 ```
 
+### Components with scripts and styles that require CSP nonce attribute
+
+Some components render inline scripts and styles that might require a nonce attribute.
+
+```elixir
+
+def style_nonce(nonces), do: nonces.csp_style_nonce
+def script_nonce(nonces), do: nonces.csp_script_nonce
+
+capture attributes: %{
+          style_nonce: LiveCapture.Attribute.with_csp_nonces(&__MODULE__.style_nonce/1),
+          script_nonce: LiveCapture.Attribute.with_csp_nonces(&__MODULE__.script_nonce/1)
+        }
+
+def my_component(assigns), do: ~H""
+```
+
+### Root Layouts with custom assigns
+
+The `plugs` option can configure a list of plugs that will be called during the component render.
+
+```elixir
+defmodule MyAppWeb.LiveCapture do
+  use LiveCapture.Component
+
+  plugs [MyAppWeb.CustomPlug, {MyAppWeb.CustomPlugWithConfig, key: "value"}]
+end
+```
+
 ## License
 
 Copyright (c) 2026 Boris Kuznetsov <me@achempion.com>
