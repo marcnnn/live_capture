@@ -2,7 +2,7 @@ defmodule LiveCapture.Component.ShowLive do
   use LiveCapture.Web, :live_view
   alias LiveCapture.Component.Components
 
-  def mount(_, _, socket) do
+  def mount(_, session, socket) do
     modules = LiveCapture.Component.list(socket.assigns.component_loaders)
 
     {:ok,
@@ -11,7 +11,8 @@ defmodule LiveCapture.Component.ShowLive do
        modules: modules,
        component: nil,
        breakpoint_options: [],
-       frame_configuration: %{"breakpoint" => nil}
+       frame_configuration: %{"breakpoint" => nil},
+       csp_style_nonce: session["csp_style_nonce"]
      )}
   end
 
@@ -105,11 +106,11 @@ defmodule LiveCapture.Component.ShowLive do
     {:noreply, assign(socket, frame_configuration: configuration)}
   end
 
-  defp iframe_style(breakpoints, frame_configuration) do
+  defp iframe_width(breakpoints, frame_configuration) do
     breakpoint = frame_configuration["breakpoint"]
     breakpoint_value = breakpoint && breakpoints[String.to_existing_atom(breakpoint)]
 
-    breakpoint_value && "width: #{breakpoint_value}"
+    breakpoint_value
   end
 
   def render(assigns) do
@@ -122,7 +123,8 @@ defmodule LiveCapture.Component.ShowLive do
         "#{assigns.live_capture_path}/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}?#{payload}"
       end
 
-    assigns = assign(assigns, iframe_src: url)
+    iframe_width = iframe_width(assigns.breakpoints, assigns.frame_configuration)
+    assigns = assign(assigns, iframe_src: url, iframe_width: iframe_width)
 
     ~H"""
     <Components.Layout.show>
@@ -147,11 +149,14 @@ defmodule LiveCapture.Component.ShowLive do
       </:header>
 
       <:render>
+        <style :if={@iframe_width} nonce={@csp_style_nonce}>
+          <%= "#live-capture-frame { width: #{@iframe_width}; }" %>
+        </style>
         <iframe
           :if={@component[:function]}
+          id="live-capture-frame"
           class="h-full w-full bg-white absolute"
           src={@iframe_src}
-          style={iframe_style(@breakpoints, @frame_configuration)}
         >
         </iframe>
       </:render>

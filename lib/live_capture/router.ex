@@ -32,7 +32,8 @@ defmodule LiveCapture.Router do
 
         live_session :live_capture,
           on_mount: {Plugs.CommonAssigns, {path, component_loaders}},
-          root_layout: {LiveCapture.Layouts, :root} do
+          root_layout: {LiveCapture.Layouts, :root},
+          session: {Plugs.AssetsConfig, :live_session, []} do
           live("/", LiveCapture.Component.ShowLive)
           live("/components/:module/:function", LiveCapture.Component.ShowLive)
           live("/components/:module/:function/:variant", LiveCapture.Component.ShowLive)
