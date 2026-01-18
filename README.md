@@ -220,6 +220,17 @@ capture attributes: %{
 def my_component(assigns), do: ~H""
 ```
 
+Update `live_capture/3` with conn assign keys of CSP nonces.
+
+```elixir
+live_capture "/live_capture",
+             MyAppWeb.LiveCapture,
+             csp_nonce_assign_key: %{
+               style: :style_csp_nonce,
+               script: :script_csp_nonce
+             }
+```
+
 ### Root Layouts with custom assigns
 
 The `plugs` option can configure a list of plugs that will be called during the component render.
