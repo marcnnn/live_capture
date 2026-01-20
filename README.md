@@ -8,6 +8,12 @@ LiveCapture helps you create high-quality LiveView components faster
 
 [Explore component libraries](https://captures.captureui.com/) · [Documentation](https://hexdocs.pm/live_capture/readme.html) · [Hex](https://hex.pm/packages/live_capture)
 
+---
+
+Need help with LiveCapture integration or your LiveView project? [Hire me](https://cal.com/achempion/hire)
+
+---
+
 ## Features
 
  - Render HEEx components with predefined state snapshots
