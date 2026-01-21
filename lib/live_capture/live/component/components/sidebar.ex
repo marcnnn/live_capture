@@ -59,7 +59,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
   defp section(assigns = %{is_selected: false}) do
     ~H"""
     <.link
-      navigate={"#{@live_capture_path}/components/#{@module}/#{Enum.at(@module.__live_capture__()[:captures], 0) |> elem(0)}"}
+      patch={"#{@live_capture_path}/components/#{@module}/#{Enum.at(@module.__live_capture__()[:captures], 0) |> elem(0)}"}
       class="block py-1 pl-2 pr-4 border-l-2 hover:border-primary hover:bg-primary/5 hover:text-primary"
     >
       {@module |> to_string() |> String.replace_prefix("Elixir.", "")}
@@ -106,7 +106,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
       <ul :if={Enum.any?(@variants)} class="pt-1 pb-2">
         <li :for={variant <- @variants}>
           <.link
-            navigate={"#{@live_capture_path}/components/#{@module}/#{@capture}/#{variant}"}
+            patch={"#{@live_capture_path}/components/#{@module}/#{@capture}/#{variant}"}
             class={[
               "group flex items-center gap-2 px-3 cursor-pointer",
               variant == @selected_variant &&
@@ -134,7 +134,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
     ~H"""
     <li>
       <.link
-        navigate={"#{@live_capture_path}/components/#{@module}/#{@capture}"}
+        patch={"#{@live_capture_path}/components/#{@module}/#{@capture}"}
         class="block border-l-2 px-3 cursor-pointer hover:text-primary hover:border-primary border-slate-300 text-slate-700"
       >
         {@capture}/{@attr_count}
