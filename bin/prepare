@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: bin/prepare <major|minor|patch|version>" >&2
+  exit 1
+}
+
+if [[ "${1:-}" == "" || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+fi
+
+input="${1#v}"
+
+current_version="$(
+  python3 - <<'PY'
+from pathlib import Path
+import re
+
+text = Path("mix.exs").read_text()
+match = re.search(r'@version\s+"([^"]+)"', text)
+if not match:
+  raise SystemExit("Failed to read @version from mix.exs")
+print(match.group(1))
+PY
+)"
+
+case "$input" in
+  major|minor|patch)
+    version="$(
+      CURRENT="$current_version" INCREMENT="$input" python3 - <<'PY'
+import os
+
+current = os.environ["CURRENT"]
+inc = os.environ["INCREMENT"]
+parts = current.split(".")
+if len(parts) != 3 or not all(p.isdigit() for p in parts):
+  raise SystemExit(f"Current version is not semver: {current}")
+major, minor, patch = map(int, parts)
+if inc == "major":
+  major += 1
+  minor = 0
+  patch = 0
+elif inc == "minor":
+  minor += 1
+  patch = 0
+else:
+  patch += 1
+print(f"{major}.{minor}.{patch}")
+PY
+    )"
+    ;;
+  *)
+    version="$input"
+    ;;
+esac
+
+tag="v${version}"
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Working tree is dirty. Commit or stash changes before preparing a release." >&2
+  exit 1
+fi
+
+last_tag="$(git tag --list 'v*' --sort=-creatordate | head -n 1)"
+range_args=()
+if [[ -n "$last_tag" ]]; then
+  range_args=("${last_tag}..HEAD")
+fi
+
+log="$(git log "${range_args[@]}" --pretty='%s' --no-merges)"
+if [[ -z "$log" ]]; then
+  log="No changes recorded"
+fi
+
+VERSION="$version" python3 - <<'PY'
+from pathlib import Path
+import os
+import re
+
+version = os.environ["VERSION"]
+path = Path("mix.exs")
+text = path.read_text()
+new_text = re.sub(r'@version\s+"[^"]+"', f'@version "{version}"', text, count=1)
+if text == new_text:
+  raise SystemExit("Failed to update @version in mix.exs")
+path.write_text(new_text)
+PY
+
+VERSION="$version" TAG="$tag" LOG="$log" python3 - <<'PY'
+from pathlib import Path
+import os
+import re
+from datetime import date
+
+version = os.environ["VERSION"]
+tag = os.environ["TAG"]
+log = os.environ["LOG"]
+path = Path("CHANGELOG.md")
+existing = path.read_text() if path.exists() else ""
+
+header = "# CHANGELOG"
+today = date.today().isoformat()
+
+lines = []
+for line in log.splitlines():
+  line = line.strip()
+  if not line:
+    continue
+  if re.fullmatch(r"v?\d+\.\d+\.\d+", line):
+    continue
+  if re.match(r"^release v\d+\.\d+\.\d+$", line, re.IGNORECASE):
+    continue
+  lines.append(f"* {line}")
+if not lines:
+  lines = ["* No changes recorded"]
+
+entry = "\n".join([
+  f"## {tag} ({today})",
+  "",
+  *lines,
+  "",
+])
+
+if existing.strip():
+  existing = existing.lstrip()
+  if not existing.startswith(header):
+    existing = header + "\n\n" + existing
+  rest = existing.split("\n", 1)[1].lstrip("\n")
+  new_text = header + "\n\n" + entry + rest
+else:
+  new_text = header + "\n\n" + entry
+
+path.write_text(new_text)
+PY
+
+echo "Prepared release ${tag}"

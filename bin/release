@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: bin/release [--yes]" >&2
+  exit 1
+}
+
+yes_flag=""
+if [[ "${1:-}" == "--yes" ]]; then
+  yes_flag="--yes"
+  shift
+elif [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+fi
+
+mix hex.publish ${yes_flag}

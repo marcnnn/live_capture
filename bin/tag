@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: bin/tag [version]" >&2
+  exit 1
+}
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+fi
+
+status="$(git status --porcelain)"
+if [[ -n "$status" ]]; then
+  allowed=$(printf "%s\n" "$status" | awk '{print $2}' | grep -vE '^(CHANGELOG\.md|mix\.exs)$' || true)
+  if [[ -n "$allowed" ]]; then
+    echo "Working tree has unrelated changes. Commit or stash them before tagging." >&2
+    exit 1
+  fi
+fi
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+
+VERSION_ARG="${1:-}" TMPDIR="$tmpdir" python3 - <<'PY'
+from pathlib import Path
+import os
+import re
+
+version_arg = os.environ.get("VERSION_ARG") or ""
+path = Path("CHANGELOG.md")
+if not path.exists():
+  raise SystemExit("CHANGELOG.md not found.")
+
+text = path.read_text()
+pattern = re.compile(r'^##\s+(v?\d+\.\d+\.\d+)\s+\(\d{4}-\d{2}-\d{2}\)\s*$', re.M)
+
+def find_section(version):
+  match = re.search(rf'^##\s+{re.escape(version)}\s+\(\d{{4}}-\d{{2}}-\d{{2}}\)\s*$', text, re.M)
+  if not match:
+    return None, None
+  header = match.group(0).strip()
+  start = match.end()
+  next_match = pattern.search(text, start)
+  end = next_match.start() if next_match else len(text)
+  body = text[start:end].strip()
+  return header, body
+
+if version_arg:
+  version = version_arg if version_arg.startswith("v") else f"v{version_arg}"
+  header, body = find_section(version)
+else:
+  top_match = pattern.search(text)
+  if not top_match:
+    raise SystemExit("No changelog section found in CHANGELOG.md.")
+  version = top_match.group(1)
+  header = top_match.group(0).strip()
+  start = top_match.end()
+  next_match = pattern.search(text, start)
+  end = next_match.start() if next_match else len(text)
+  body = text[start:end].strip()
+
+if not version or body is None:
+  raise SystemExit("Failed to locate changelog section for tagging.")
+
+tmpdir = Path(os.environ["TMPDIR"])
+tmpdir.joinpath("version").write_text(version)
+tmpdir.joinpath("header").write_text(header)
+tmpdir.joinpath("body").write_text(body)
+PY
+
+version="$(cat "$tmpdir/version")"
+header="$(cat "$tmpdir/header")"
+body="$(cat "$tmpdir/body")"
+
+msg_file="$tmpdir/message"
+{
+  echo "$header"
+  echo
+  echo "$body"
+} >"$msg_file"
+
+git add CHANGELOG.md mix.exs
+if git diff --cached --quiet; then
+  echo "No staged changes found for release commit." >&2
+  exit 1
+fi
+
+git commit -m "release ${version}"
+git tag -a "$version" -F "$msg_file"
+git push origin HEAD
+git push origin "$version"
+
+echo "Tagged and pushed ${version}"
