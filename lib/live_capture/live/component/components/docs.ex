@@ -252,9 +252,13 @@ defmodule LiveCapture.Component.Components.Docs do
     padding = String.duplicate("&nbsp;", indent)
 
     raw([
+      ~s(<div class="flex">),
       "<div>",
       padding,
+      "</div>",
+      ~s(<div class="whitespace-pre-wrap">),
       Phoenix.HTML.Safe.to_iodata(highlight_token(content, :string)),
+      "</div>",
       "</div>"
     ])
   end
