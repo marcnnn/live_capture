@@ -1,6 +1,7 @@
 defmodule LiveCapture.Component.ShowLive do
   use LiveCapture.Web, :live_view
   alias LiveCapture.Component.Components
+  alias LiveCapture.Router
 
   def mount(_, session, socket) do
     modules = LiveCapture.Component.list(socket.assigns.component_loaders)
@@ -116,12 +117,15 @@ defmodule LiveCapture.Component.ShowLive do
   def render(assigns) do
     payload = Plug.Conn.Query.encode(%{custom_params: assigns.component[:custom_params] || %{}})
 
-    url =
-      if assigns.component[:variant] do
-        "#{assigns.live_capture_path}/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}/#{assigns.component[:variant]}?#{payload}"
-      else
-        "#{assigns.live_capture_path}/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}?#{payload}"
-      end
+    base_url =
+      Router.raw_component_url(
+        assigns.live_capture_path,
+        assigns.component[:module],
+        assigns.component[:function],
+        assigns.component[:variant]
+      )
+
+    url = "#{base_url}?#{payload}"
 
     iframe_width = iframe_width(assigns[:breakpoints], assigns[:frame_configuration])
     assigns = assign(assigns, iframe_src: url, iframe_width: iframe_width)

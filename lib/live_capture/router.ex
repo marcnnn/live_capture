@@ -1,4 +1,42 @@
 defmodule LiveCapture.Router do
+  @moduledoc """
+  Router macros for mounting LiveCapture in your Phoenix application.
+
+  ## Options
+
+    * `:csp_nonce_assign_key` - CSP nonce configuration for inline scripts/styles
+
+  ## Example
+
+      import LiveCapture.Router
+
+      scope "/dev" do
+        pipe_through :browser
+        live_capture "/live_capture", MyAppWeb.LiveCapture
+      end
+
+  """
+
+  @doc """
+  Builds a raw component URL for the given module, function, and optional variant.
+
+  ## Examples
+
+      iex> LiveCapture.Router.raw_component_url("/dev/storybook", "Core", "button", nil)
+      "/dev/storybook/raw/components/Core/button"
+
+      iex> LiveCapture.Router.raw_component_url("/dev/storybook", "Core", "button", "primary")
+      "/dev/storybook/raw/components/Core/button/primary"
+  """
+  @spec raw_component_url(String.t(), String.t(), String.t(), String.t() | nil) :: String.t()
+  def raw_component_url(prefix, module_short_name, function_name, nil) do
+    "#{prefix}/raw/components/#{module_short_name}/#{function_name}"
+  end
+
+  def raw_component_url(prefix, module_short_name, function_name, variant) do
+    "#{prefix}/raw/components/#{module_short_name}/#{function_name}/#{variant}"
+  end
+
   defmacro live_capture(path, component_loaders \\ [], opts \\ []) do
     quote bind_quoted: [path: path, component_loaders: component_loaders, opts: opts] do
       import Phoenix.Router

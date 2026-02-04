@@ -254,6 +254,26 @@ defmodule MyAppWeb.LiveCapture do
 end
 ```
 
+## Snapshot Testing
+
+### Snapshot Testing with Playwright
+
+LiveCapture provides a Mix task to generate component URLs for visual regression testing.
+
+### Generate URLs
+
+```bash
+mix live_capture.gen.urls --module MyAppWeb.LiveCapture --prefix /dev/live_capture captures.json
+```
+
+See `mix help live_capture.gen.urls` for details on the output format.
+
+### Resources
+
+- [Playwright Visual Comparisons](https://playwright.dev/docs/test-snapshots)
+- [Playwright Dynamic Tests](https://github.com/microsoft/playwright/issues/7036)
+
+
 ## License
 
 Copyright (c) 2026 Boris Kuznetsov <me@achempion.com>
