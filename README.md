@@ -15,7 +15,7 @@ Document, preview, and test LiveView components in isolation.
 
 ---
 
-Need help with LiveCapture integration or your LiveView project? [Hire me](https://cal.com/achempion/hire)
+Using LiveCapture in your org? I'd love to learn more, let's [have a chat](https://cal.com/achempion/meet) or just [send me an email](mailto:me@achempion.com?subject=Feedback%20on%20LiveCapture)
 
 ---
 
