@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.2.6 (2026-02-06)
+
+* Simplify fetching modules with components
+* Add mix task with schema export (thanks @marcnnn)
+* Add a link to thinking elixir podcast
+
 ## v0.2.5 (2026-02-01)
 
 * Recompile assets with new classes
