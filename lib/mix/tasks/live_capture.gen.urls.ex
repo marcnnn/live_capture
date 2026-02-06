@@ -168,11 +168,41 @@ defmodule Mix.Tasks.LiveCapture.Gen.Urls do
         variant
       )
 
-    %{
+    component = %{
       module: module_data.module,
       function: function_data.name,
       variant: variant,
       url: url
     }
+
+    # Include per-component breakpoints if available
+    component =
+      case function_data[:breakpoints] do
+        nil -> component
+        [] -> component
+        breakpoints -> Map.put(component, :breakpoints, breakpoints)
+      end
+
+    # Include metadata if available (viewport_height, wait_time, etc.)
+    # The introspection API nests user metadata under a "metadata" key within the
+    # top-level metadata map (which also contains "breakpoints"). We unwrap the
+    # nested metadata to the top level for a cleaner JSON output.
+    case function_data[:metadata] do
+      nil ->
+        component
+
+      metadata when metadata == %{} ->
+        component
+
+      metadata ->
+        # Extract the user-provided metadata from the nested "metadata" key
+        user_metadata =
+          Map.get(metadata, "metadata", %{})
+          |> Map.merge(Map.get(metadata, :metadata, %{}))
+
+        if user_metadata == %{},
+          do: component,
+          else: Map.put(component, :metadata, user_metadata)
+    end
   end
 end
