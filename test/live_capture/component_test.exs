@@ -2,6 +2,60 @@ defmodule LiveCapture.ComponentTest do
   use ExUnit.Case, async: true
 
   alias LiveCapture.Component.Components.Example
+  alias LiveCapture.TestFixtures.AnotherComponent
+  alias LiveCapture.TestFixtures.AnotherLoader
+
+  describe "list/1" do
+    test "returns only components from the specified loader, not from other loaders" do
+      # This is the critical test for the fix:
+      # When requesting components for LiveCaptureDemo only,
+      # AnotherComponent (which uses AnotherLoader) should NOT be included
+
+      demo_components = LiveCapture.Component.list([LiveCapture.LiveCaptureDemo])
+
+      # Example uses LiveCaptureDemo, so it should be included
+      assert Example in demo_components
+
+      # AnotherComponent uses AnotherLoader, so it should NOT be in demo_components
+      # This test FAILS without the fix because the old code returned all components
+      # from all applications that contain any of the loaders
+      refute AnotherComponent in demo_components,
+             "AnotherComponent should not be in the list for LiveCaptureDemo"
+    end
+
+    test "returns only components from AnotherLoader when requested" do
+      another_components = LiveCapture.Component.list([AnotherLoader])
+
+      # AnotherComponent uses AnotherLoader, so it should be included
+      assert AnotherComponent in another_components
+
+      # Example uses LiveCaptureDemo, so it should NOT be included
+      refute Example in another_components,
+             "Example should not be in the list for AnotherLoader"
+    end
+
+    test "returns components from multiple loaders when both are specified" do
+      all_components =
+        LiveCapture.Component.list([
+          LiveCapture.LiveCaptureDemo,
+          AnotherLoader
+        ])
+
+      # Both components should be included
+      assert Example in all_components
+      assert AnotherComponent in all_components
+    end
+
+    test "each component's loader matches one of the specified loaders" do
+      demo_components = LiveCapture.Component.list([LiveCapture.LiveCaptureDemo])
+
+      # All returned components should have LiveCaptureDemo as their loader
+      for component <- demo_components do
+        assert component.__live_capture__()[:loader] == LiveCapture.LiveCaptureDemo,
+               "Component #{inspect(component)} has wrong loader"
+      end
+    end
+  end
 
   test "loader configuration" do
     assert LiveCapture.LiveCaptureDemo.breakpoints() == [
